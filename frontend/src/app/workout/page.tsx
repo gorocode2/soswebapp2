@@ -48,193 +48,135 @@ export default function Workout() {
                   : 'text-slate-300 hover:text-white hover:bg-slate-700'
               }`}
             >
-              🗓️ Monthly View
+              📊 Monthly View
             </button>
           </div>
         </div>
 
-        {viewMode === 'weekly' ? (
-          <>
-            {/* Weekly Schedule */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">This Week's Training</h2>
-                <div className="text-slate-300">
-                  Week 2 of 4 • Peak Phase
-                </div>
-              </div>
-              
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {weeklyWorkouts.map((workout, index) => (
-                  <div
-                    key={index}
-                    className={`bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 ${
-                      workout.day === 'Tuesday' ? 'ring-2 ring-blue-500/30 bg-blue-500/5' : ''
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-lg font-semibold text-white">{workout.day}</h3>
-                      {workout.day === 'Tuesday' && (
-                        <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full text-xs">
-                          Today
-                        </span>
-                      )}
-                    </div>
-                    
-                    <h4 className="text-white font-medium mb-2">{workout.workout}</h4>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Intensity:</span>
-                        <span className={`text-sm px-2 py-1 rounded ${
-                          workout.intensity === 'High' ? 'bg-red-500/20 text-red-400' :
-                          workout.intensity === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                          workout.intensity === 'Low' ? 'bg-green-500/20 text-green-400' :
-                          'bg-slate-500/20 text-slate-400'
-                        }`}>
-                          {workout.intensity}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Duration:</span>
-                        <span className="text-white">{workout.duration}</span>
-                      </div>
-                    </div>
-                    
-                    {workout.workout !== 'Rest Day' && (
-                      <button className="w-full mt-4 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 text-blue-400 border border-blue-500/30 font-medium py-2 rounded-lg transition-all duration-300">
-                        View Details
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* Training Overview */}
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
+            <h2 className="text-2xl font-bold mb-2">🦈 Apex Training Schedule</h2>
+            <p className="text-blue-100">Unleash your predatory performance with structured training</p>
+          </div>
+        </div>
 
-            {/* Workout Details */}
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-white mb-4">🔥 Today's Session: Interval Training</h3>
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="text-lg font-semibold text-white mb-3">Workout Structure</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between p-3 bg-slate-700/50 rounded-lg">
-                        <span className="text-slate-300">Warm-up</span>
-                        <span className="text-white">10 min @ 60% FTP</span>
-                      </div>
-                      <div className="flex justify-between p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                        <span className="text-slate-300">Main Set</span>
-                        <span className="text-white">6 x 3 min @ 105% FTP</span>
-                      </div>
-                      <div className="flex justify-between p-3 bg-slate-700/50 rounded-lg">
-                        <span className="text-slate-300">Recovery</span>
-                        <span className="text-white">2 min @ 50% FTP</span>
-                      </div>
-                      <div className="flex justify-between p-3 bg-slate-700/50 rounded-lg">
-                        <span className="text-slate-300">Cool-down</span>
-                        <span className="text-white">10 min @ 55% FTP</span>
+        {viewMode === 'weekly' ? (
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-white mb-6">This Week&apos;s Training Plan</h3>
+            
+            <div className="grid gap-4">
+              {weeklyWorkouts.map((workout, workoutIndex) => (
+                <div key={workoutIndex} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 hover:bg-slate-800/70 transition-all duration-300">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-4 h-4 rounded-full ${
+                        workout.color === 'red' ? 'bg-red-500' :
+                        workout.color === 'blue' ? 'bg-blue-500' :
+                        workout.color === 'green' ? 'bg-green-500' :
+                        workout.color === 'orange' ? 'bg-orange-500' :
+                        workout.color === 'purple' ? 'bg-purple-500' :
+                        workout.color === 'indigo' ? 'bg-indigo-500' :
+                        'bg-slate-500'
+                      }`} />
+                      <div>
+                        <h4 className="text-lg font-semibold text-white">{workout.day}</h4>
+                        <p className="text-slate-300">{workout.workout}</p>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-lg font-semibold text-white mb-3">Performance Targets</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Target Power:</span>
-                        <span className="text-blue-400 font-semibold">280W</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Heart Rate Zone:</span>
-                        <span className="text-red-400 font-semibold">Zone 4-5</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Cadence:</span>
-                        <span className="text-yellow-400 font-semibold">90-95 RPM</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Estimated TSS:</span>
-                        <span className="text-green-400 font-semibold">85</span>
-                      </div>
-                    </div>
-                    
-                    <button className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 rounded-lg transition-all duration-300">
-                      Start Workout 🚀
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Monthly Overview */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">Monthly Training Plan</h2>
-                <div className="text-slate-300">
-                  January 2025 • Peak Phase
-                </div>
-              </div>
-              
-              <div className="grid gap-6 md:grid-cols-2">
-                {monthlyOverview.map((week, index) => (
-                  <div key={index} className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-lg font-semibold text-white">{week.week}</h3>
-                      <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
-                        {week.focus}
+                    <div className="text-right">
+                      <p className="text-white font-medium">{workout.duration}</p>
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                        workout.intensity === 'High' ? 'bg-red-500/20 text-red-400' :
+                        workout.intensity === 'Medium' ? 'bg-orange-500/20 text-orange-400' :
+                        workout.intensity === 'Low' ? 'bg-green-500/20 text-green-400' :
+                        'bg-slate-500/20 text-slate-400'
+                      }`}>
+                        {workout.intensity}
                       </span>
                     </div>
-                    
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Training Load:</span>
-                        <span className="text-white font-semibold">{week.load}</span>
-                      </div>
-                      
-                      <div>
-                        <div className="flex justify-between mb-2">
-                          <span className="text-slate-400">Progress:</span>
-                          <span className="text-blue-400 font-semibold">{week.progress}%</span>
-                        </div>
-                        <div className="w-full bg-slate-700 rounded-full h-2">
-                          <div 
-                            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${week.progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
 
-            {/* Monthly Stats */}
-            <div>
-              <h3 className="text-xl font-bold text-white mb-4">📊 Monthly Statistics</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50 text-center">
-                  <div className="text-2xl font-bold text-blue-400">33h</div>
-                  <div className="text-sm text-slate-300">Total Training</div>
+            {/* Training Compliance */}
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
+              <h4 className="text-xl font-bold text-white mb-4">📈 Weekly Progress</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-blue-400 mb-1">6/7</div>
+                  <div className="text-slate-300 text-sm">Sessions Complete</div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50 text-center">
-                  <div className="text-2xl font-bold text-green-400">24</div>
-                  <div className="text-sm text-slate-300">Workouts</div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-400 mb-1">405</div>
+                  <div className="text-slate-300 text-sm">Total Minutes</div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50 text-center">
-                  <div className="text-2xl font-bold text-yellow-400">856</div>
-                  <div className="text-sm text-slate-300">TSS Points</div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-400 mb-1">286W</div>
+                  <div className="text-slate-300 text-sm">Avg Power</div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50 text-center">
-                  <div className="text-2xl font-bold text-purple-400">92%</div>
-                  <div className="text-sm text-slate-300">Compliance</div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-400 mb-1">94%</div>
+                  <div className="text-slate-300 text-sm">Compliance</div>
                 </div>
               </div>
             </div>
-          </>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-white mb-6">Monthly Training Overview</h3>
+            
+            <div className="grid gap-4">
+              {monthlyOverview.map((week, weekIndex) => (
+                <div key={weekIndex} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 hover:bg-slate-800/70 transition-all duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-lg font-semibold text-white">{week.week}</h4>
+                      <p className="text-slate-300">{week.focus}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white font-medium">{week.load}</p>
+                      <p className="text-slate-400 text-sm">Training Load</p>
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-3">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${week.progress}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-2 text-sm">
+                    <span className="text-slate-400">Progress</span>
+                    <span className="text-blue-400 font-medium">{week.progress}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Monthly Summary */}
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
+              <h4 className="text-xl font-bold text-white mb-4">🏆 Monthly Performance Summary</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-blue-400 mb-1">33</div>
+                  <div className="text-slate-300 text-sm">Total Hours</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-400 mb-1">28</div>
+                  <div className="text-slate-300 text-sm">Sessions</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-400 mb-1">+12W</div>
+                  <div className="text-slate-300 text-sm">FTP Gain</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-400 mb-1">89%</div>
+                  <div className="text-slate-300 text-sm">Monthly Goal</div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </PageLayout>
