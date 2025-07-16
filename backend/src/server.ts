@@ -120,11 +120,21 @@ app.get('/api/health', async (req: Request, res: Response) => {
 // API routes
 app.use('/api', apiRoutes);
 
-// 404 handler
-app.use('*', (req: Request, res: Response) => {
+// 🦈 404 handler for School of Sharks API
+app.use('/*', (req: Request, res: Response) => {
   res.status(404).json({
+    status: 'error',
+    message: '🦈 Endpoint not found in the School of Sharks!',
     error: 'Route not found',
-    message: `Cannot ${req.method} ${req.originalUrl}`,
+    path: req.originalUrl,
+    method: req.method,
+    available_endpoints: [
+      '/health - API health check',
+      '/api/health - API specific health',
+      '/api/users - User management',
+      '/api/cycling - Cycling analytics',
+      '/api/training - Training programs'
+    ]
   });
 });
 
