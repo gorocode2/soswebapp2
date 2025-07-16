@@ -38,14 +38,83 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'OK',
-    message: 'School of Sharks API is running',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
+// 📊 Welcome endpoint for School of Sharks API
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    message: '🦈 Welcome to School of Sharks API',
+    tagline: 'Unleash your inner predator with AI-powered cycling training',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      api_health: '/api/health',
+      docs: '/api/docs'
+    },
+    features: [
+      '🚴‍♂️ AI-powered cycling analytics',
+      '📊 Real-time performance tracking',
+      '🎯 Personalized training programs',
+      '⚡ Advanced metrics and insights'
+    ]
   });
+});
+
+// 🦈 Enhanced Health check endpoint for apex performance monitoring
+app.get('/health', async (req: Request, res: Response) => {
+  try {
+    // Test database connection
+    const dbResult = await db.query('SELECT NOW() as current_time');
+    const dbStatus = dbResult.rows.length > 0 ? 'connected' : 'disconnected';
+    
+    res.status(200).json({
+      status: 'success',
+      message: '🦈 School of Sharks API - Apex Performance Ready!',
+      timestamp: new Date().toISOString(),
+      uptime: Math.floor(process.uptime()),
+      environment: process.env.NODE_ENV || 'development',
+      version: '1.0.0',
+      services: {
+        database: dbStatus,
+        ai_engine: 'ready',
+        analytics: 'operational'
+      },
+      performance: {
+        memory_usage: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+        memory_limit: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+        cpu_load: process.cpuUsage()
+      }
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      message: '🦈 School of Sharks API experiencing issues',
+      timestamp: new Date().toISOString(),
+      error: process.env.NODE_ENV === 'development' ? error : 'Service temporarily unavailable'
+    });
+  }
+});
+
+// 🚴‍♂️ API health check (alternative endpoint for nginx routing)
+app.get('/api/health', async (req: Request, res: Response) => {
+  try {
+    const dbResult = await db.query('SELECT 1 as test');
+    res.status(200).json({
+      status: 'apex',
+      message: '🦈 Cycling API unleashed and ready to dominate!',
+      timestamp: new Date().toISOString(),
+      database: dbResult.rows.length > 0 ? 'connected' : 'disconnected',
+      endpoints: {
+        users: '/api/users',
+        cycling: '/api/cycling',
+        training: '/api/training'
+      }
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      message: 'API health check failed',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // API routes
