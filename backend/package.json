@@ -1,0 +1,41 @@
+{
+  "name": "school-of-sharks-backend",
+  "version": "1.0.0",
+  "description": "Backend API for School of Sharks AI cycling training platform",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "lint": "eslint src/**/*.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cycling",
+    "AI",
+    "training",
+    "fitness"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "compression": "^1.8.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.8.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.0.14",
+    "@types/pg": "^8.15.4",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
