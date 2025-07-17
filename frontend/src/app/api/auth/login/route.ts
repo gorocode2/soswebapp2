@@ -1,12 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+interface LoginResponse {
+  success: boolean;
+  message?: string;
+  data?: {
+    id: number;
+    email: string;
+    username: string;
+    first_name: string;
+    last_name: string;
+    cycling_experience: string;
+    subscription_type: string;
+    apex_score: number;
+    is_verified: boolean;
+    created_at: string;
+  };
+  error?: string;
+}
+
 /**
  * 🦈 School of Sharks Login API Endpoint
  * Authenticate apex cycling predators
  */
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse<LoginResponse>> {
   try {
-    const { email, password } = await request.json();
+    const body: LoginRequest = await request.json();
+    const { email, password } = body;
 
     // Validate input
     if (!email || !password) {
@@ -57,7 +81,7 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('🚨 Login API error:', error);
     
     // Fallback for development - simulate successful login

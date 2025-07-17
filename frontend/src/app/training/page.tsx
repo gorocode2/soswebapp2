@@ -130,7 +130,7 @@ export default function TrainingPage() {
 
         {/* Quick Stats */}
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700/50 mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6">🔥 Today's Recommended Training</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">🔥 Today&apos;s Recommended Training</h2>
           <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl p-6 border border-blue-500/30">
             <div className="flex items-center justify-between">
               <div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -23,7 +23,7 @@ interface RegisterFormData {
   city?: string;
 }
 
-export default function AuthPage() {
+function AuthPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || '/dashboard';
@@ -101,7 +101,8 @@ export default function AuthPage() {
       } else {
         setError(result.error || 'Login failed');
       }
-    } catch (error) {
+    } catch (loginError) {
+      console.error('Login error:', loginError);
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
@@ -172,7 +173,8 @@ export default function AuthPage() {
       } else {
         setError(result.error || 'Registration failed');
       }
-    } catch (error) {
+    } catch (registerError) {
+      console.error('Registration error:', registerError);
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
@@ -392,7 +394,7 @@ export default function AuthPage() {
                 <select
                   required
                   value={registerData.cycling_experience}
-                  onChange={(e) => setRegisterData({ ...registerData, cycling_experience: e.target.value as any })}
+                  onChange={(e) => setRegisterData({ ...registerData, cycling_experience: e.target.value as RegisterFormData['cycling_experience'] })}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 >
                   <option value="beginner">🦈 Beginner Shark</option>
@@ -486,5 +488,20 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p className="text-blue-300">🦈 Loading authentication...</p>
+        </div>
+      </div>
+    }>
+      <AuthPageContent />
+    </Suspense>
   );
 }

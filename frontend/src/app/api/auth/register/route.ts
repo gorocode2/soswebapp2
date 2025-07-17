@@ -1,12 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+interface RegisterRequest {
+  email: string;
+  username: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  cycling_experience?: string;
+  weight_kg?: number;
+  height_cm?: number;
+  country?: string;
+  city?: string;
+}
+
+interface RegisterResponse {
+  success: boolean;
+  message?: string;
+  data?: {
+    id: number;
+    email: string;
+    username: string;
+    first_name: string;
+    last_name: string;
+    cycling_experience: string;
+    subscription_type: string;
+    apex_score: number;
+    is_verified: boolean;
+    created_at: string;
+  };
+  error?: string;
+}
+
 /**
  * 🦈 School of Sharks Registration API Endpoint
  * Create new apex cycling predators
  */
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse<RegisterResponse>> {
   try {
-    const userData = await request.json();
+    const userData: RegisterRequest = await request.json();
 
     // Validate required fields
     const { email, password, username, first_name, last_name } = userData;
@@ -75,7 +106,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('🚨 Registration API error:', error);
     
     // Fallback for development - simulate successful registration

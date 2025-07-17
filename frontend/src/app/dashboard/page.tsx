@@ -19,7 +19,6 @@ export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedMetric, setSelectedMetric] = useState<'power' | 'speed' | 'endurance'>('power');
 
   useEffect(() => {
     // Check authentication and load user data
