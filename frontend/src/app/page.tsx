@@ -1,7 +1,46 @@
+'use client';
+
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import PageLayout from './components/PageLayout';
 
 export default function Home() {
+  const router = useRouter();
+
+  // Check if user is authenticated
+  const isAuthenticated = () => {
+    if (typeof window !== 'undefined') {
+      const userSession = localStorage.getItem('user_session');
+      return userSession !== null;
+    }
+    return false;
+  };
+
+  // Handle navigation to training or auth
+  const handleStartTraining = () => {
+    if (isAuthenticated()) {
+      router.push('/training');
+    } else {
+      router.push('/auth?redirect=/training');
+    }
+  };
+
+  const handleGetStarted = () => {
+    if (isAuthenticated()) {
+      router.push('/dashboard');
+    } else {
+      router.push('/auth?redirect=/dashboard');
+    }
+  };
+
+  const handleViewAnalytics = () => {
+    if (isAuthenticated()) {
+      router.push('/analytics');
+    } else {
+      router.push('/auth?redirect=/analytics');
+    }
+  };
+
   return (
     <PageLayout showBottomNav={true}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,10 +60,16 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg ring-2 ring-blue-500/20">
+              <button 
+                onClick={handleStartTraining}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg ring-2 ring-blue-500/20"
+              >
                 🚴‍♂️ Start Training
               </button>
-              <button className="border-2 border-blue-500 text-blue-400 hover:bg-blue-600 hover:text-white font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 hover:border-blue-600">
+              <button 
+                onClick={handleViewAnalytics}
+                className="border-2 border-blue-500 text-blue-400 hover:bg-blue-600 hover:text-white font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 hover:border-blue-600"
+              >
                 📊 View Analytics
               </button>
             </div>
@@ -96,7 +141,10 @@ export default function Home() {
             <p className="text-xl text-slate-200 mb-8">
               Transform your cycling performance with cutting-edge AI technology
             </p>
-            <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-12 rounded-full text-xl transition-all duration-300 transform hover:scale-105 shadow-2xl ring-2 ring-blue-500/30">
+            <button 
+              onClick={handleGetStarted}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-12 rounded-full text-xl transition-all duration-300 transform hover:scale-105 shadow-2xl ring-2 ring-blue-500/30"
+            >
               🚀 Get Started Now
             </button>
           </div>

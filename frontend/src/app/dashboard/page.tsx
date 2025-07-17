@@ -1,16 +1,73 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import PageLayout from '../components/PageLayout';
 
+interface UserSession {
+  user_id: number;
+  email: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  cycling_experience: string;
+  apex_score: number;
+  subscription_type: string;
+}
+
 export default function Dashboard() {
+  const router = useRouter();
+  const [user, setUser] = useState<UserSession | null>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState<'power' | 'speed' | 'endurance'>('power');
+
+  useEffect(() => {
+    // Check authentication and load user data
+    const userSession = localStorage.getItem('user_session');
+    if (!userSession) {
+      router.push('/auth?redirect=/dashboard');
+      return;
+    }
+
+    try {
+      const userData = JSON.parse(userSession) as UserSession;
+      setUser(userData);
+    } catch (error) {
+      console.error('Invalid session data:', error);
+      localStorage.removeItem('user_session');
+      localStorage.removeItem('isAuthenticated');
+      router.push('/auth?redirect=/dashboard');
+      return;
+    }
+
+    setLoading(false);
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user_session');
+    localStorage.removeItem('isAuthenticated');
+    router.push('/');
+  };
+
+  if (loading) {
+    return (
+      <PageLayout showBottomNav={false}>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-2xl text-blue-400">🦈 Loading your apex dashboard...</div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to auth
+  }
 
   const stats = [
     { label: 'Training Hours', value: '127', change: '+12%', icon: '⏱️' },
     { label: 'Avg Power (W)', value: '285', change: '+8%', icon: '⚡' },
     { label: 'Max Speed', value: '48.2', change: '+5%', icon: '🚴‍♂️' },
-    { label: 'Apex Score', value: '8.7', change: '+15%', icon: '🦈' },
+    { label: 'Apex Score', value: user.apex_score.toString(), change: '+15%', icon: '🦈' },
   ];
 
   const recentWorkouts = [
@@ -21,14 +78,27 @@ export default function Dashboard() {
   ];
 
   return (
-    <PageLayout title="Training Dashboard">
+    <PageLayout title={`${user.username}'s Training Dashboard`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         {/* Welcome Section */}
         <div className="mb-8">
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
-            <h2 className="text-2xl font-bold mb-2">Welcome back, Apex Cyclist! 🦈</h2>
-            <p className="text-blue-100">Ready to unleash your predatory performance on the road?</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Welcome back, {user.first_name}! 🦈</h2>
+                <p className="text-blue-100">Ready to unleash your predatory performance on the road?</p>
+                <div className="mt-2 text-sm text-blue-200">
+                  {user.cycling_experience} cyclist • {user.subscription_type} member
+                </div>
+              </div>
+              <button 
+                onClick={handleLogout}
+                className="text-blue-200 hover:text-white transition-colors duration-300 text-sm"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
 
