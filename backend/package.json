@@ -6,10 +6,24 @@
   "scripts": {
     "dev": "nodemon src/server-simple.ts",
     "dev:full": "nodemon src/server.ts",
+    "dev:production": "NODE_ENV=production PORT=5001 nodemon src/server.production.ts",
+    "dev:production:vps": "NODE_ENV=production PORT=5001 nodemon src/server.production.ts",
+    "dev:production:local": "NODE_ENV=production PORT=5001 nodemon src/server.production.ts",
+    "dev:production:alt": "NODE_ENV=production PORT=5002 nodemon src/server.production.ts",
     "build": "tsc",
+    "build:production": "tsc && cp .env.production dist/",
     "start": "node dist/server.js",
+    "start:production": "NODE_ENV=production node -r dotenv/config dist/server.production.js dotenv_config_path=.env.production",
+    "start:prod-ts": "NODE_ENV=production ts-node -r dotenv/config src/server.production.ts dotenv_config_path=.env.production",
+    "deploy:build": "npm run build:production",
+    "deploy:start": "npm run start:production",
+    "deploy": "npm run deploy:build && npm run deploy:start",
+    "health:check": "curl http://localhost:5001/health",
+    "health:production": "curl https://soscycling.com/health",
     "lint": "eslint src/**/*.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:production": "npm run start:prod-ts & sleep 5 && curl http://localhost:5001/health && pkill -f server.production"
   },
   "keywords": [
     "cycling",
@@ -22,11 +36,13 @@
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^4.17.21",
+    "@types/express-rate-limit": "^5.1.3",
     "bcryptjs": "^3.0.2",
     "compression": "^1.8.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.0.1",
     "helmet": "^8.1.0",
     "morgan": "^1.10.0",
     "pg": "^8.16.3"
