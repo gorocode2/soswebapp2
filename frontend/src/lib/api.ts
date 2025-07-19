@@ -17,6 +17,47 @@ interface ApiConfig {
   };
 }
 
+// Type definitions for API requests and responses
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HealthCheckResponse {
+  status: string;
+  timestamp: string;
+  database: {
+    connected: boolean;
+    host?: string;
+    database?: string;
+  };
+}
+
 // Get API base URL based on environment
 const getApiBaseUrl = (): string => {
   // Client-side: use NEXT_PUBLIC_API_URL
@@ -112,7 +153,7 @@ export const api = {
   },
 
   // POST request
-  async post<T>(endpoint: string, data?: any): Promise<T> {
+  async post<T>(endpoint: string, data?: Record<string, unknown>): Promise<T> {
     return api.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
@@ -120,7 +161,7 @@ export const api = {
   },
 
   // PUT request
-  async put<T>(endpoint: string, data?: any): Promise<T> {
+  async put<T>(endpoint: string, data?: Record<string, unknown>): Promise<T> {
     return api.request<T>(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
