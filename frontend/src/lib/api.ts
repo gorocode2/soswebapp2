@@ -1,0 +1,188 @@
+// 🦈 School of Sharks API Configuration
+// Environment-aware API configuration for development and production
+
+interface ApiConfig {
+  baseUrl: string;
+  timeout: number;
+  retries: number;
+  endpoints: {
+    auth: {
+      login: string;
+      register: string;
+      logout: string;
+    };
+    users: string;
+    health: string;
+    testDb: string;
+  };
+}
+
+// Get API base URL based on environment
+const getApiBaseUrl = (): string => {
+  // Client-side: use NEXT_PUBLIC_API_URL
+  if (typeof window !== 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+  }
+  
+  // Server-side: use internal URL or fallback
+  return process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+};
+
+// API Configuration
+export const apiConfig: ApiConfig = {
+  baseUrl: getApiBaseUrl(),
+  timeout: 10000, // 10 seconds
+  retries: 3,
+  endpoints: {
+    auth: {
+      login: '/auth/login',
+      register: '/auth/register',
+      logout: '/auth/logout'
+    },
+    users: '/users',
+    health: '/health',
+    testDb: '/test-db'
+  }
+};
+
+// API Helper Functions
+export const api = {
+  // Build full URL for endpoint
+  url: (endpoint: string): string => {
+    const cleanBaseUrl = apiConfig.baseUrl.replace(/\/+$/, '');
+    const cleanEndpoint = endpoint.replace(/^\/+/, '');
+    return `${cleanBaseUrl}/${cleanEndpoint}`;
+  },
+
+  // Common headers
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+
+  // Request with retry logic
+  async request<T>(
+    endpoint: string, 
+    options: RequestInit = {}
+  ): Promise<T> {
+    const url = api.url(endpoint);
+    let lastError: Error = new Error('No attempts made');
+
+    for (let attempt = 1; attempt <= apiConfig.retries; attempt++) {
+      try {
+        console.log(`🦈 API Request (attempt ${attempt}):`, url);
+        
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            ...api.headers,
+            ...options.headers,
+          },
+          signal: AbortSignal.timeout(apiConfig.timeout),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log(`✅ API Success:`, data);
+        return data;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error('Unknown error');
+        console.warn(`⚠️  API attempt ${attempt} failed:`, lastError.message);
+        
+        // Don't retry on the last attempt
+        if (attempt === apiConfig.retries) {
+          break;
+        }
+        
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
+
+    console.error(`❌ All API attempts failed for ${url}:`, lastError);
+    throw lastError;
+  },
+
+  // GET request
+  async get<T>(endpoint: string): Promise<T> {
+    return api.request<T>(endpoint, { method: 'GET' });
+  },
+
+  // POST request
+  async post<T>(endpoint: string, data?: any): Promise<T> {
+    return api.request<T>(endpoint, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  },
+
+  // PUT request
+  async put<T>(endpoint: string, data?: any): Promise<T> {
+    return api.request<T>(endpoint, {
+      method: 'PUT',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  },
+
+  // DELETE request
+  async delete<T>(endpoint: string): Promise<T> {
+    return api.request<T>(endpoint, { method: 'DELETE' });
+  }
+};
+
+// Authentication API
+export const authApi = {
+  async login(email: string, password: string) {
+    return api.post(apiConfig.endpoints.auth.login, { email, password });
+  },
+
+  async register(userData: {
+    email: string;
+    username: string;
+    first_name: string;
+    last_name: string;
+    cycling_experience: string;
+    password: string;
+  }) {
+    return api.post(apiConfig.endpoints.auth.register, userData);
+  },
+
+  async logout() {
+    return api.post(apiConfig.endpoints.auth.logout);
+  }
+};
+
+// Users API
+export const usersApi = {
+  async getUsers() {
+    return api.get(apiConfig.endpoints.users);
+  }
+};
+
+// Health Check API
+export const healthApi = {
+  async check() {
+    return api.get(apiConfig.endpoints.health);
+  },
+
+  async testDatabase() {
+    return api.get(apiConfig.endpoints.testDb);
+  }
+};
+
+// Environment info
+export const envInfo = {
+  isDevelopment: process.env.NODE_ENV === 'development',
+  isProduction: process.env.NODE_ENV === 'production',
+  apiUrl: apiConfig.baseUrl,
+  debugMode: process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
+};
+
+console.log('🦈 API Configuration initialized:', {
+  environment: process.env.NODE_ENV,
+  apiUrl: apiConfig.baseUrl,
+  debugMode: envInfo.debugMode
+});
