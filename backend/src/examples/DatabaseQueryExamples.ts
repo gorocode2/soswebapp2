@@ -1,5 +1,5 @@
 import UserService from '../services/UserService';
-import { DatabaseConnection } from '../config/database';
+import { db, isDatabaseConnected } from '../config/database';
 
 /**
  * 🦈 School of Sharks Database Query Functions - Complete Usage Examples
@@ -8,7 +8,6 @@ import { DatabaseConnection } from '../config/database';
 
 // Initialize services
 const userService = new UserService();
-const db = DatabaseConnection.getInstance();
 
 /**
  * 🚀 Example 1: Complete User Registration Flow
@@ -175,11 +174,15 @@ export async function databaseHealthCheck() {
 
   try {
     // Test connection
-    const isConnected = await db.testConnection();
+    const isConnected = await isDatabaseConnected();
     console.log('Database connected:', isConnected);
 
-    // Get health status
-    const healthStatus = await db.healthCheck();
+    // Get health status by testing a simple query
+    const result = await db.query('SELECT NOW() as current_time');
+    const healthStatus = { 
+      connected: true, 
+      timestamp: result.rows[0].current_time 
+    };
     console.log('Database health:', healthStatus);
 
     return { isConnected, healthStatus };
@@ -298,7 +301,7 @@ export async function runInteractiveDemo() {
     console.error('Demo failed:', error);
   } finally {
     // Close database connections
-    await db.close();
+    await db.end();
   }
 }
 

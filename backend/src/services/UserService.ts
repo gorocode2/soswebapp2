@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 import { UserModel } from '../models/UserModel';
 import UserQueries from '../models/UserQueries';
-import { DatabaseConnection } from '../config/database';
+import { db as defaultDb } from '../config/database';
 import {
   User,
   CreateUserRequest,
@@ -24,7 +24,7 @@ export class UserService {
   private db: Pool;
 
   constructor() {
-    this.db = DatabaseConnection.getInstance().getPool();
+    this.db = defaultDb;
     this.userModel = new UserModel(this.db);
     this.userQueries = new UserQueries(this.db);
   }

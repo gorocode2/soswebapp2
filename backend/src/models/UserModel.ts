@@ -8,7 +8,7 @@ import {
   UserModelInterface,
   UserStats 
 } from './types';
-import { DatabaseConnection } from '../config/database';
+import { db as defaultDb } from '../config/database';
 
 /**
  * 🦈 School of Sharks User Management Model
@@ -18,7 +18,7 @@ export class UserModel implements UserModelInterface {
   private db: Pool;
 
   constructor(database?: Pool) {
-    this.db = database || DatabaseConnection.getInstance().getPool();
+    this.db = database || defaultDb;
   }
 
   /**
