@@ -7,9 +7,9 @@
     "dev": "NODE_ENV=development ENABLE_DEBUG=true nodemon --exec ts-node src/server.ts",
     "dev:debug": "NODE_ENV=development ENABLE_DEBUG=true DEBUG=* nodemon --exec ts-node src/server.ts",
     "dev:full": "nodemon src/server.ts",
-    "dev:production": "NODE_ENV=production PORT=5001 nodemon src/server.production.ts",
-    "dev:production:vps": "NODE_ENV=production PORT=5001 nodemon src/server.production.ts",
-    "dev:production:local": "NODE_ENV=production PORT=5001 nodemon src/server.production.ts",
+    "dev:production": "NODE_ENV=production PORT=5000 nodemon src/server.production.ts",
+    "dev:production:vps": "NODE_ENV=production PORT=5000 nodemon src/server.production.ts",
+    "dev:production:local": "NODE_ENV=production PORT=5000 nodemon src/server.production.ts",
     "dev:production:alt": "NODE_ENV=production PORT=5002 nodemon src/server.production.ts",
     "build": "tsc",
     "build:production": "tsc && cp .env.production dist/",
@@ -19,7 +19,7 @@
     "deploy:build": "npm run build:production",
     "deploy:start": "npm run start:production",
     "deploy": "npm run deploy:build && npm run deploy:start",
-    "health:check": "curl http://localhost:5001/health",
+    "health:check": "curl http://localhost:5000/health",
     "health:production": "curl https://soscycling.com/health",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
@@ -38,7 +38,7 @@
     "describe:users": "NODE_ENV=production npx ts-node src/scripts/describe-users-table.ts",
     "check:table": "NODE_ENV=production npx ts-node src/scripts/check-table-structure.ts",
     "test:registration": "NODE_ENV=production npx ts-node src/scripts/test-full-registration.ts",
-    "test:production": "npm run start:prod-ts & sleep 5 && curl http://localhost:5001/health && pkill -f server.production"
+    "test:production": "npm run start:prod-ts & sleep 5 && curl http://localhost:5000/health && pkill -f server.production"
   },
   "keywords": [
     "cycling",
