@@ -29,13 +29,13 @@ export class UserModel implements UserModelInterface {
       email,
       username,
       password,
-      first_name,
-      last_name,
-      date_of_birth,
+      firstName,
+      lastName,
+      dateOfBirth,
       gender,
-      cycling_experience = 'beginner',
-      weight_kg,
-      height_cm,
+      fitnessLevel = 'beginner',
+      weight,
+      height,
       country,
       city
     } = userData;
@@ -55,8 +55,8 @@ export class UserModel implements UserModelInterface {
     `;
 
     const values = [
-      email, username, password_hash, first_name, last_name,
-      date_of_birth, gender, cycling_experience, weight_kg, height_cm,
+      email, username, password_hash, firstName, lastName,
+      dateOfBirth, gender, fitnessLevel, weight, height,
       country, city
     ];
 

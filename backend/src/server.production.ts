@@ -7,6 +7,11 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { db, monitorDatabaseHealth, isDatabaseConnected, getDatabaseStatus } from './config/database.production';
 
+// Import routes
+import authRoutes from './routes/auth';
+import userRoutes from './routes/users';
+
+// Load production environment
 // Load production environment
 dotenv.config({ path: '.env.production' });
 
@@ -64,6 +69,10 @@ app.use('/api/', apiLimiter);
 // Body parsing with size limits
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 🦈 API Routes - School of Sharks Endpoints
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // 🦈 Force HTTPS in production
 if (process.env.FORCE_HTTPS === 'true') {

@@ -85,15 +85,23 @@ export interface CreateUserRequest {
   email: string;
   username: string;
   password: string;
-  first_name: string;
-  last_name: string;
-  date_of_birth?: string;
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: string;
   gender?: User['gender'];
-  cycling_experience?: User['cycling_experience'];
-  weight_kg?: number;
-  height_cm?: number;
+  fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
+  weight?: number;
+  height?: number;
   country?: string;
   city?: string;
+  
+  // Database field aliases for compatibility
+  first_name?: string;
+  last_name?: string;
+  date_of_birth?: string;
+  cycling_experience?: 'beginner' | 'intermediate' | 'advanced';
+  weight_kg?: number;
+  height_cm?: number;
 }
 
 export interface UserLoginRequest {
@@ -106,14 +114,14 @@ export interface UserResponse {
   uuid: string;
   email: string;
   username: string;
-  first_name: string;
-  last_name: string;
-  cycling_experience: string;
-  subscription_type: string;
-  apex_score: number;
-  is_verified: boolean;
-  avatar_url?: string;
-  created_at: Date;
+  firstName?: string;
+  lastName?: string;
+  fitnessLevel?: string;
+  weight?: number;
+  height?: number;
+  avatarUrl?: string;
+  createdAt: Date;
+  apex_score?: number; // AI-calculated performance score
 }
 
 export interface UserUpdateRequest {

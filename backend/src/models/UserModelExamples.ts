@@ -24,11 +24,11 @@ export async function createNewCyclist() {
     email: 'apex.rider@soscycling.com',
     username: 'apex_shark',
     password: 'secure_shark_password_2025',
-    first_name: 'Apex',
-    last_name: 'Rider',
-    cycling_experience: 'advanced',
-    weight_kg: 75.5,
-    height_cm: 180,
+    firstName: 'Apex',
+    lastName: 'Rider',
+    fitnessLevel: 'advanced',
+    weight: 75.5,
+    height: 180,
     country: 'United States',
     city: 'San Francisco'
   };
