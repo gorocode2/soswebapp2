@@ -53,12 +53,13 @@ export default function DebugPage() {
         message: response.ok ? '🦈 Health check successful' : 'Health check failed',
         data: { status: response.status, response: data }
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       addResult({
         test: 'Health Endpoint',
         status: 'failed',
-        message: `Connection failed: ${error.message}`,
-        data: { error: error.message }
+        message: `Connection failed: ${errorMessage}`,
+        data: { error: errorMessage }
       });
     }
 
