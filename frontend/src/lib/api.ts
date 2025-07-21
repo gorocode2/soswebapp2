@@ -86,13 +86,13 @@ export const apiConfig: ApiConfig = {
   retries: 3,
   endpoints: {
     auth: {
-      login: '/api/auth/login',
-      register: '/api/auth/register',
-      logout: '/api/auth/logout'
+      login: '/auth/login',
+      register: '/auth/register',
+      logout: '/auth/logout'
     },
-    users: '/api/users',
-    health: '/api/health',
-    testDb: '/api/test-db'
+    users: '/users',
+    health: '/health',
+    testDb: '/test-db'
   }
 };
 
