@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
+import { rateLimit } from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { Pool } from 'pg';
 
@@ -10,31 +11,135 @@ import { Pool } from 'pg';
 import apiRoutes from './routes/api';
 import debugRoutes from './routes/debug';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables based on NODE_ENV
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+dotenv.config({ path: envFile });
+
+console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`🔧 Loading config from: ${envFile}`);
 
 // Initialize Express app
 const app: Express = express();
 const PORT = process.env.PORT || 5000;
 
+// 🦈 Database Configuration
+const getDatabaseConfig = () => {
+  // Try DATABASE_URL first (preferred)
+  if (process.env.DATABASE_URL) {
+    console.log(`🔗 Using DATABASE_URL connection`);
+    return {
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      max: parseInt(process.env.DB_POOL_MAX || '20'),
+      min: parseInt(process.env.DB_POOL_MIN || '2'),
+      idleTimeoutMillis: parseInt(process.env.DB_POOL_IDLE_TIMEOUT || '30000'),
+      connectionTimeoutMillis: parseInt(process.env.DB_POOL_CONNECTION_TIMEOUT || '5000'),
+    };
+  }
+  
+  // Fallback to individual DB_* variables
+  console.log(`🔗 Using individual DB config`);
+  return {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    database: process.env.DB_NAME || 'school_of_sharks',
+    user: process.env.DB_USER || 'goro',
+    password: process.env.DB_PASSWORD || '',
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    max: parseInt(process.env.DB_POOL_MAX || '20'),
+    min: parseInt(process.env.DB_POOL_MIN || '2'),
+    idleTimeoutMillis: parseInt(process.env.DB_POOL_IDLE_TIMEOUT || '30000'),
+    connectionTimeoutMillis: parseInt(process.env.DB_POOL_CONNECTION_TIMEOUT || '5000'),
+  };
+};
+
 // Database connection
-export const db = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-});
+export const db = new Pool(getDatabaseConfig());
+
+// Test database connection with better error handling
+const testDatabaseConnection = async () => {
+  try {
+    const client = await db.connect();
+    const result = await client.query('SELECT NOW() as current_time, version() as pg_version');
+    const { current_time, pg_version } = result.rows[0];
+    
+    console.log('🦈 ================================');
+    console.log('   Database Connection SUCCESS');
+    console.log('🦈 ================================');
+    console.log(`✅ Connected to PostgreSQL`);
+    console.log(`🕐 Server Time: ${current_time}`);
+    console.log(`📊 PostgreSQL: ${pg_version.split(' ')[0]}`);
+    console.log('🦈 ================================');
+    
+    client.release();
+    return true;
+  } catch (err) {
+    console.log('🦈 ================================');
+    console.log('   Database Connection FAILED');
+    console.log('🦈 ================================');
+    console.error('❌ Database connection error:', err);
+    console.log('🦈 ================================');
+    
+    if (process.env.NODE_ENV === 'production') {
+      console.log('💀 Production requires database connection. Exiting...');
+      process.exit(1);
+    }
+    return false;
+  }
+};
 
 // Test database connection
-db.connect()
-  .then(() => console.log('✅ Connected to PostgreSQL database'))
-  .catch((err) => console.error('❌ Database connection error:', err));
+testDatabaseConnection();
 
-// Middleware
-app.use(helmet()); // Security headers
+// 🦈 Security Middleware - Production Grade
+if (process.env.NODE_ENV === 'production') {
+  // Rate limiting for production
+  const limiter = rateLimit({
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // limit each IP
+    message: {
+      error: 'Too many requests from this IP, please try again later.',
+      retryAfter: '15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  
+  app.use(limiter);
+  
+  // Enhanced security headers for production
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", process.env.CORS_ORIGIN || "https://soscycling.com"]
+      }
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
+    }
+  }));
+} else {
+  // Basic helmet for development
+  app.use(helmet());
+}
+
 app.use(compression()); // Compress responses
-app.use(morgan('combined')); // Logging
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev')); // Logging
+
+// CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' 
+    ? [process.env.CORS_ORIGIN || 'https://soscycling.com']
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
