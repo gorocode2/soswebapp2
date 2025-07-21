@@ -70,13 +70,13 @@ export interface HealthCheckResponse {
 
 // Get API base URL based on environment
 const getApiBaseUrl = (): string => {
-  // Client-side: use NEXT_PUBLIC_API_URL
-  if (typeof window !== 'undefined') {
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  // For production, always use HTTPS
+  if (process.env.NODE_ENV === 'production') {
+    return process.env.NEXT_PUBLIC_API_URL || 'https://soscycling.com/api';
   }
   
-  // Server-side: use internal URL or fallback
-  return process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  // For development
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 };
 
 // API Configuration
