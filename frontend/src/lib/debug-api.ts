@@ -5,12 +5,30 @@
 
 export const debugAPI = {
   getAPIUrl: () => {
-    const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    
+    // Force HTTPS in production environment
+    if (process.env.NODE_ENV === 'production' && url.startsWith('http://')) {
+      url = url.replace('http://', 'https://');
+      console.log('🔒 Forced HTTPS for production:', url);
+    }
+    
     console.log('🔍 Frontend using API URL:', url);
     return url;
   },
 
+  showEnvironment: () => {
+    console.log('🦈 Frontend Environment Variables:', {
+      NODE_ENV: process.env.NODE_ENV,
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+      NEXT_PUBLIC_DEBUG_MODE: process.env.NEXT_PUBLIC_DEBUG_MODE,
+      NEXT_PUBLIC_ENABLE_ANALYTICS: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS
+    });
+  },
+
   logRequest: (endpoint: string, data: any) => {
+    debugAPI.showEnvironment(); // Show env vars with each request
     console.log('🦈 API Request:', {
       url: `${debugAPI.getAPIUrl()}${endpoint}`,
       timestamp: new Date().toISOString(),
