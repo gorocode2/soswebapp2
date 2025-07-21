@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import authRoutes from './auth';
 import cyclingRoutes from './cycling';
 import userRoutes from './users';
 import trainingRoutes from './training';
@@ -12,6 +13,7 @@ router.get('/', (req, res) => {
     version: '1.0.0',
     description: 'High-tech AI cycling training platform',
     endpoints: [
+      '/api/auth - Authentication and registration',
       '/api/users - User management',
       '/api/cycling - Cycling data and analytics',
       '/api/training - AI training programs',
@@ -20,6 +22,7 @@ router.get('/', (req, res) => {
 });
 
 // Route modules
+router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/cycling', cyclingRoutes);
 router.use('/training', trainingRoutes);

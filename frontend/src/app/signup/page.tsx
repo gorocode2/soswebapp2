@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api } from '@/lib/api';
+import { authApi } from '@/lib/api';
 
 interface SignupFormData {
   email: string;
@@ -54,30 +54,42 @@ export default function SignupPage() {
     }
 
     try {
-      // Prepare data for API
+      // Prepare data for API with both field name formats for compatibility
       const signupData = {
         email: formData.email,
         username: formData.username,
         password: formData.password,
-        firstName: formData.firstName || undefined,
-        lastName: formData.lastName || undefined,
+        firstName: formData.firstName || '',
+        lastName: formData.lastName || '',
+        first_name: formData.firstName || '',  // Also send snake_case
+        last_name: formData.lastName || '',    // Also send snake_case
+        cycling_experience: formData.fitnessLevel,
         fitnessLevel: formData.fitnessLevel,
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         height: formData.height ? parseFloat(formData.height) : undefined,
+        weight_kg: formData.weight ? parseFloat(formData.weight) : undefined,
+        height_cm: formData.height ? parseFloat(formData.height) : undefined,
       };
 
-      // Call registration API
-      const response = await api.post<{
+      console.log('🦈 Signup: Sending registration data:', {
+        ...signupData,
+        password: '[HIDDEN]'
+      });
+
+      // Call registration API using authApi
+      const response = await authApi.register(signupData) as {
         success: boolean;
         message: string;
-        data: {
+        data?: {
           user: any;
           token: string;
           expiresIn: string;
         };
-      }>('/auth/register', signupData);
+      };
 
-      if (response.success) {
+      console.log('🦈 Signup: Registration response:', response);
+
+      if (response.success && response.data) {
         setSuccess('🦈 Welcome to School of Sharks! Registration successful!');
         
         // Store user data and token

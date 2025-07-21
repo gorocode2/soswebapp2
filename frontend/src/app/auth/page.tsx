@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { authApi } from '@/lib/api';
 
 interface LoginFormData {
   email: string;
@@ -16,7 +17,7 @@ interface RegisterFormData {
   confirmPassword: string;
   first_name: string;
   last_name: string;
-  cycling_experience: 'beginner' | 'intermediate' | 'advanced' | 'pro';
+  cycling_experience: 'beginner' | 'intermediate' | 'advanced' | 'professional';
   weight_kg?: number;
   height_cm?: number;
   country?: string;
@@ -130,39 +131,51 @@ function AuthPageContent() {
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: registerData.email,
-          username: registerData.username,
-          password: registerData.password,
-          first_name: registerData.first_name,
-          last_name: registerData.last_name,
-          cycling_experience: registerData.cycling_experience,
-          weight_kg: registerData.weight_kg || undefined,
-          height_cm: registerData.height_cm || undefined,
-          country: registerData.country || undefined,
-          city: registerData.city || undefined
-        }),
-      });
+      console.log('🦈 Auth Page: Starting registration with authApi');
+      
+      // Use authApi.register instead of direct fetch
+      const result = await authApi.register({
+        email: registerData.email,
+        username: registerData.username,
+        password: registerData.password,
+        firstName: registerData.first_name,
+        lastName: registerData.last_name,
+        first_name: registerData.first_name,
+        last_name: registerData.last_name,
+        cycling_experience: registerData.cycling_experience,
+        weight_kg: registerData.weight_kg || undefined,
+        height_cm: registerData.height_cm || undefined,
+        country: registerData.country || undefined,
+        city: registerData.city || undefined
+      }) as {
+        success: boolean;
+        message: string;
+        data?: {
+          user: any;
+          token: string;
+          expiresIn: string;
+        };
+      };
 
-      const result = await response.json();
+      console.log('🦈 Auth Page: Registration result:', result);
 
-      if (result.success) {
+      if (result.success && result.data) {
         setSuccess('🦈 Account created successfully! Welcome to School of Sharks!');
-        // Store user data with proper session structure
+        
+        // Store user data and token
+        localStorage.setItem('authToken', result.data.token);
+        localStorage.setItem('userData', JSON.stringify(result.data.user));
+        
+        // Also store in legacy format for compatibility
         localStorage.setItem('user_session', JSON.stringify({
-          user_id: result.data.id,
-          email: result.data.email,
-          username: result.data.username,
-          first_name: result.data.first_name,
-          last_name: result.data.last_name,
-          cycling_experience: result.data.cycling_experience,
-          apex_score: result.data.apex_score,
-          subscription_type: result.data.subscription_type
+          user_id: result.data.user.id,
+          email: result.data.user.email,
+          username: result.data.user.username,
+          first_name: result.data.user.first_name,
+          last_name: result.data.user.last_name,
+          cycling_experience: result.data.user.cycling_experience,
+          apex_score: result.data.user.apex_score,
+          subscription_type: result.data.user.subscription_type
         }));
         localStorage.setItem('isAuthenticated', 'true');
         
@@ -171,11 +184,11 @@ function AuthPageContent() {
           router.push(redirectPath);
         }, 1500);
       } else {
-        setError(result.error || 'Registration failed');
+        setError(result.message || 'Registration failed');
       }
-    } catch (registerError) {
+    } catch (registerError: any) {
       console.error('Registration error:', registerError);
-      setError('Network error. Please try again.');
+      setError(registerError.message || 'Network error. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -400,7 +413,7 @@ function AuthPageContent() {
                   <option value="beginner">🦈 Beginner Shark</option>
                   <option value="intermediate">🌊 Intermediate Predator</option>
                   <option value="advanced">⚡ Advanced Apex</option>
-                  <option value="pro">🏆 Pro Dominator</option>
+                  <option value="professional">🏆 Pro Dominator</option>
                 </select>
               </div>
 

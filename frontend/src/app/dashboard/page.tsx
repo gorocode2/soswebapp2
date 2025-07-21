@@ -11,8 +11,8 @@ interface UserSession {
   first_name: string;
   last_name: string;
   cycling_experience: string;
-  apex_score: number;
-  subscription_type: string;
+  apex_score?: number;
+  subscription_type?: string;
 }
 
 export default function Dashboard() {
@@ -66,7 +66,7 @@ export default function Dashboard() {
     { label: 'Training Hours', value: '127', change: '+12%', icon: '⏱️' },
     { label: 'Avg Power (W)', value: '285', change: '+8%', icon: '⚡' },
     { label: 'Max Speed', value: '48.2', change: '+5%', icon: '🚴‍♂️' },
-    { label: 'Apex Score', value: user.apex_score.toString(), change: '+15%', icon: '🦈' },
+    { label: 'Apex Score', value: (user.apex_score || 0).toString(), change: '+15%', icon: '🦈' },
   ];
 
   const recentWorkouts = [
@@ -88,7 +88,7 @@ export default function Dashboard() {
                 <h2 className="text-2xl font-bold mb-2">Welcome back, {user.first_name}! 🦈</h2>
                 <p className="text-blue-100">Ready to unleash your predatory performance on the road?</p>
                 <div className="mt-2 text-sm text-blue-200">
-                  {user.cycling_experience} cyclist • {user.subscription_type} member
+                  {user.cycling_experience} cyclist • {user.subscription_type || 'free'} member
                 </div>
               </div>
               <button 

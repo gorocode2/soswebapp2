@@ -21,8 +21,35 @@ router.post('/register', async (req: Request, res: Response) => {
       fitnessLevel,
       weight,
       height,
-      dateOfBirth
+      dateOfBirth,
+      // Also accept database field names for compatibility
+      first_name,
+      last_name,
+      cycling_experience,
+      weight_kg,
+      height_cm,
+      date_of_birth
     }: CreateUserRequest = req.body;
+
+    console.log('🦈 Registration request received:', {
+      email,
+      username,
+      firstName,
+      lastName,
+      first_name,
+      last_name,
+      fitnessLevel,
+      cycling_experience,
+      hasPassword: !!password
+    });
+
+    // Use either camelCase or snake_case field names
+    const userFirstName = firstName || first_name;
+    const userLastName = lastName || last_name;
+    const userFitnessLevel = fitnessLevel || cycling_experience;
+    const userWeight = weight || weight_kg;
+    const userHeight = height || height_cm;
+    const userDateOfBirth = dateOfBirth || date_of_birth;
 
     // 🛡️ Validation
     if (!email || !username || !password) {
@@ -90,14 +117,26 @@ router.post('/register', async (req: Request, res: Response) => {
     const values = [
       email.toLowerCase().trim(),
       username.trim(),
-      firstName?.trim() || null,
-      lastName?.trim() || null,
+      userFirstName?.trim() || '',
+      userLastName?.trim() || '',
       passwordHash,
-      fitnessLevel || 'beginner',
-      weight || null,
-      height || null,
-      dateOfBirth || null
+      userFitnessLevel || 'beginner',
+      userWeight || null,
+      userHeight || null,
+      userDateOfBirth || null
     ];
+
+    console.log('🦈 Final SQL values:', {
+      email: values[0],
+      username: values[1], 
+      first_name: values[2],
+      last_name: values[3],
+      password_hash: '[HIDDEN]',
+      cycling_experience: values[5],
+      weight_kg: values[6],
+      height_cm: values[7],
+      date_of_birth: values[8]
+    });
 
     const result = await db.query(insertUserQuery, values);
     const newUser = result.rows[0];

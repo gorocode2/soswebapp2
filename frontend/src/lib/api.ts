@@ -1,6 +1,8 @@
 // 🦈 School of Sharks API Configuration
 // Environment-aware API configuration for development and production
 
+import { debugAPI } from './debug-api';
+
 interface ApiConfig {
   baseUrl: string;
   timeout: number;
@@ -36,6 +38,14 @@ export interface RegisterRequest {
   username: string;
   firstName?: string;
   lastName?: string;
+  // Database field names for compatibility
+  first_name?: string;
+  last_name?: string;
+  cycling_experience?: 'beginner' | 'intermediate' | 'advanced' | 'professional';
+  weight_kg?: number;
+  height_cm?: number;
+  country?: string;
+  city?: string;
 }
 
 export interface User {
@@ -62,11 +72,11 @@ export interface HealthCheckResponse {
 const getApiBaseUrl = (): string => {
   // Client-side: use NEXT_PUBLIC_API_URL
   if (typeof window !== 'undefined') {
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   }
   
   // Server-side: use internal URL or fallback
-  return process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+  return process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 };
 
 // API Configuration
@@ -76,13 +86,13 @@ export const apiConfig: ApiConfig = {
   retries: 3,
   endpoints: {
     auth: {
-      login: '/auth/login',
-      register: '/auth/register',
-      logout: '/auth/logout'
+      login: '/api/auth/login',
+      register: '/api/auth/register',
+      logout: '/api/auth/logout'
     },
-    users: '/users',
-    health: '/health',
-    testDb: '/test-db'
+    users: '/api/users',
+    health: '/api/health',
+    testDb: '/api/test-db'
   }
 };
 
@@ -109,6 +119,14 @@ export const api = {
     const url = api.url(endpoint);
     let lastError: Error = new Error('No attempts made');
 
+    // Debug logging
+    debugAPI.logRequest(endpoint, {
+      url,
+      method: options.method || 'GET',
+      headers: options.headers,
+      body: options.body ? JSON.parse(options.body as string) : undefined
+    });
+
     for (let attempt = 1; attempt <= apiConfig.retries; attempt++) {
       try {
         console.log(`🦈 API Request (attempt ${attempt}):`, url);
@@ -122,11 +140,26 @@ export const api = {
           signal: AbortSignal.timeout(apiConfig.timeout),
         });
 
+        const data = await response.json();
+        
+        // Enhanced debug logging
+        debugAPI.logResponse(endpoint, {
+          status: response.status,
+          ok: response.ok,
+          statusText: response.statusText,
+          data: data
+        });
+
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          console.error(`🚨 API Error ${response.status}:`, {
+            url,
+            status: response.status,
+            statusText: response.statusText,
+            data: data
+          });
+          throw new Error(`HTTP ${response.status}: ${response.statusText} - ${data.message || 'Unknown error'}`);
         }
 
-        const data = await response.json();
         console.log(`✅ API Success:`, data);
         return data;
       } catch (error) {
@@ -177,18 +210,41 @@ export const api = {
 // Authentication API
 export const authApi = {
   async login(email: string, password: string) {
+    console.log('🦈 Login attempt for:', email);
     return api.post(apiConfig.endpoints.auth.login, { email, password });
   },
 
-  async register(userData: {
-    email: string;
-    username: string;
-    first_name: string;
-    last_name: string;
-    cycling_experience: string;
-    password: string;
-  }) {
-    return api.post(apiConfig.endpoints.auth.register, userData);
+  async register(userData: RegisterRequest) {
+    console.log('🦈 Registration attempt:', {
+      email: userData.email,
+      username: userData.username,
+      hasFirstName: !!userData.firstName || !!userData.first_name,
+      hasLastName: !!userData.lastName || !!userData.last_name,
+      cycling_experience: userData.cycling_experience,
+      apiUrl: apiConfig.baseUrl,
+      endpoint: apiConfig.endpoints.auth.register
+    });
+    
+    // Ensure we're using the database field names
+    const registrationData = {
+      email: userData.email,
+      username: userData.username,
+      password: userData.password,
+      first_name: userData.firstName || userData.first_name || '',
+      last_name: userData.lastName || userData.last_name || '',
+      cycling_experience: userData.cycling_experience || 'beginner',
+      weight_kg: userData.weight_kg,
+      height_cm: userData.height_cm,
+      country: userData.country,
+      city: userData.city
+    };
+
+    console.log('🦈 Sending registration data:', {
+      ...registrationData,
+      password: '[HIDDEN]'
+    });
+
+    return api.post(apiConfig.endpoints.auth.register, registrationData);
   },
 
   async logout() {

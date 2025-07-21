@@ -8,6 +8,7 @@ import { Pool } from 'pg';
 
 // Import routes
 import apiRoutes from './routes/api';
+import debugRoutes from './routes/debug';
 
 // Load environment variables
 dotenv.config();
@@ -119,6 +120,12 @@ app.get('/api/health', async (req: Request, res: Response) => {
 
 // API routes
 app.use('/api', apiRoutes);
+
+// Debug routes (only in development)
+if (process.env.NODE_ENV === 'development' || process.env.ENABLE_DEBUG === 'true') {
+  app.use('/api/debug', debugRoutes);
+  console.log('🔍 Debug routes enabled at /api/debug/*');
+}
 
 // 🦈 404 handler for School of Sharks API
 app.use('/*', (req: Request, res: Response) => {

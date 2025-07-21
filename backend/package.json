@@ -4,7 +4,8 @@
   "description": "Backend API for School of Sharks AI cycling training platform",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "nodemon src/server-simple.ts",
+    "dev": "NODE_ENV=development ENABLE_DEBUG=true nodemon --exec ts-node src/server.ts",
+    "dev:debug": "NODE_ENV=development ENABLE_DEBUG=true DEBUG=* nodemon --exec ts-node src/server.ts",
     "dev:full": "nodemon src/server.ts",
     "dev:production": "NODE_ENV=production PORT=5001 nodemon src/server.production.ts",
     "dev:production:vps": "NODE_ENV=production PORT=5001 nodemon src/server.production.ts",
