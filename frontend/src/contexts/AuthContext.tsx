@@ -1,9 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { User } from '../models/types';
-import { authApi } from '../lib/auth-api';
+import { User, RegisterData } from '../models/types';
+import { authApi, AuthResponse, RegisterResponse } from '../lib/auth-api';
 
 interface AuthContextType {
   user: User | null;
@@ -11,7 +10,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string; error?: string }>;
   logout: () => void;
-  register: (userData: any) => Promise<{ success: boolean; message?: string; error?: string }>;
+  register: (userData: RegisterData) => Promise<{ success: boolean; message?: string; error?: string }>;
   checkAuthStatus: () => Promise<void>;
 }
 
@@ -83,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       console.log('🦈 Attempting login for:', email);
 
-      const result: any = await authApi.login(email, password);
+      const result: AuthResponse = await authApi.login(email, password);
 
       if (result.success && result.data) {
         const { token, user: userData } = result.data;
@@ -108,12 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Register function
-  const register = async (userData: any) => {
+  const register = async (userData: RegisterData) => {
     try {
       setIsLoading(true);
       console.log('🦈 Attempting registration for:', userData.email);
 
-      const result: any = await authApi.register(userData);
+      const result: RegisterResponse = await authApi.register(userData);
 
       if (result.success && result.data) {
         const { token, user: newUser } = result.data;

@@ -12,3 +12,8 @@ export interface User {
   avatarUrl?: string;
   createdAt: string;
 }
+
+// For user registration
+export type RegisterData = Omit<User, 'id' | 'uuid' | 'createdAt'> & {
+  password?: string;
+};
