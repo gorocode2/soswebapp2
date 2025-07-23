@@ -1,48 +1,48 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import PageLayout from './components/PageLayout';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Home() {
   const router = useRouter();
+  const { isLoggedIn, isLoading } = useAuth();
 
-  // Check if user is authenticated
-  const isAuthenticated = () => {
-    if (typeof window !== 'undefined') {
-      const userSession = localStorage.getItem('user_session');
-      return userSession !== null;
-    }
-    return false;
-  };
-
-  // Handle navigation to training or auth
-  const handleStartTraining = () => {
-    if (isAuthenticated()) {
-      router.push('/training');
-    } else {
-      router.push('/auth?redirect=/training');
-    }
-  };
-
-  const handleGetStarted = () => {
-    if (isAuthenticated()) {
+  useEffect(() => {
+    // If auth state is loaded and user is logged in, redirect to dashboard
+    if (!isLoading && isLoggedIn) {
       router.push('/dashboard');
-    } else {
-      router.push('/auth?redirect=/dashboard');
     }
+  }, [isLoading, isLoggedIn, router]);
+
+  // These handlers are now only for non-authenticated users,
+  // as authenticated users will be redirected.
+  const handleGetStarted = () => {
+    router.push('/auth?redirect=/dashboard');
   };
 
   const handleViewAnalytics = () => {
-    if (isAuthenticated()) {
-      router.push('/analytics');
-    } else {
-      router.push('/auth?redirect=/analytics');
-    }
+    router.push('/auth?redirect=/analytics');
   };
 
+  // While checking auth or if user is logged in, show a loading screen
+  // to prevent flashing the homepage content before redirect.
+  if (isLoading || isLoggedIn) {
+    return (
+      <PageLayout showBottomNav={false}>
+        <div className="min-h-screen flex items-center justify-center bg-slate-900">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-white text-lg">🦈 Loading...</p>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
-    <PageLayout showBottomNav={true}>
+    <PageLayout showBottomNav={false}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <div className="relative overflow-hidden pt-16 pb-16">
@@ -61,10 +61,10 @@ export default function Home() {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button 
-                onClick={handleStartTraining}
+                onClick={handleGetStarted}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg ring-2 ring-blue-500/20"
               >
-                🚴‍♂️ Start Training
+                🚀 Go to Dashboard
               </button>
               <button 
                 onClick={handleViewAnalytics}

@@ -10,7 +10,6 @@ interface BottomNavItem {
 }
 
 const navItems: BottomNavItem[] = [
-  { href: '/', icon: '🏠', label: 'Home' },
   { href: '/dashboard', icon: '📊', label: 'Dashboard' },
   { href: '/workout', icon: '💪', label: 'Workout' },
   { href: '/videos', icon: '🎥', label: 'Videos' },
