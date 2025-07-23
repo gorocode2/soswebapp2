@@ -50,8 +50,7 @@ export const setStoredUser = (user: User): void => {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const isLoggedIn = !!user;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Check authentication status on app load
   const checkAuthStatus = async () => {
@@ -64,13 +63,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // For now, trust the stored token and user data
         // In a production app, you should verify the token with the backend
         setUser(storedUser);
+        setIsLoggedIn(true);
       } else {
         setUser(null);
+        setIsLoggedIn(false);
       }
     } catch (error) {
       console.error('Auth check failed:', error);
       removeStoredToken();
       setUser(null);
+      setIsLoggedIn(false);
     } finally {
       setIsLoading(false);
     }
@@ -91,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setStoredToken(token);
         setStoredUser(userData);
         setUser(userData);
+        setIsLoggedIn(true);
 
         console.log('✅ Login successful:', userData.email);
         return { success: true, message: 'Login successful!' };
@@ -121,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setStoredToken(token);
         setStoredUser(newUser);
         setUser(newUser);
+        setIsLoggedIn(true);
 
         console.log('✅ Registration successful:', newUser.email);
         return { success: true, message: 'Registration successful!' };
@@ -141,6 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('🦈 User logging out');
     removeStoredToken();
     setUser(null);
+    setIsLoggedIn(false);
   };
 
   // Check auth status on mount
