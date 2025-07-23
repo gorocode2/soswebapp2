@@ -2,7 +2,6 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import BottomNavigation from '../components/BottomNavigation'; // Import the shared component
 
@@ -154,7 +153,7 @@ export default function DashboardPage() {
           <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 bg-gray-500"></div>
           <div className="flex flex-col justify-center">
             <p className="text-white text-base font-medium leading-normal line-clamp-1">Olivia</p>
-            <p className="text-[#90aecb] text-sm font-normal leading-normal line-clamp-2">Joined the 'Hill Climb Challenge'</p>
+            <p className="text-[#90aecb] text-sm font-normal leading-normal line-clamp-2">Joined the &apos;Hill Climb Challenge&apos;</p>
           </div>
         </div>
 
