@@ -16,7 +16,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
       {/* Left: Greeting */}
       <div className="flex justify-start">
         <h1 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] whitespace-nowrap">
-          Hi, {user?.firstName || user?.username}
+          School of Sharks
         </h1>
       </div>
 
@@ -32,7 +32,8 @@ export default function Header({ user, onLogout }: HeaderProps) {
       </div>
 
       {/* Right: Settings Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-end items-center gap-4">
+        <span className="text-white text-sm">Hi, {user?.firstName || user?.username}</span>
         <button
           onClick={onLogout}
           className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 bg-transparent text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0"
