@@ -15,7 +15,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
     <header className="grid grid-cols-3 items-center bg-[#101a23] p-4 pb-2">
       {/* Left: Greeting */}
       <div className="flex justify-start">
-        <h1 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] whitespace-nowrap">
+        <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] whitespace-nowrap">
           School of Sharks
         </h1>
       </div>
