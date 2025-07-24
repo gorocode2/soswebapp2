@@ -33,7 +33,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
 
       {/* Right: Settings Button */}
       <div className="flex justify-end items-center gap-4">
-        <span className="text-white text-sm">Hi, {user?.firstName || user?.username}</span>
+        <span className="text-white text-lg font-bold">Hi, {user?.firstName || user?.username}</span>
         <button
           onClick={onLogout}
           className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 bg-transparent text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0"
