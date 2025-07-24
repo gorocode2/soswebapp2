@@ -1,184 +1,121 @@
 'use client';
 
-import { useState } from 'react';
-import PageLayout from '../components/PageLayout';
+import React from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import Header from '@/app/components/Header';
+import BottomNavigation from '@/app/components/BottomNavigation';
 
-export default function Workout() {
-  const [viewMode, setViewMode] = useState<'weekly' | 'monthly'>('weekly');
+// SVG Icon Components from the provided HTML
+const ArrowLeftIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+    <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path>
+  </svg>
+);
 
-  const weeklyWorkouts = [
-    { day: 'Monday', workout: 'Rest Day', intensity: 'Rest', duration: '0 min', color: 'slate' },
-    { day: 'Tuesday', workout: 'Interval Training', intensity: 'High', duration: '45 min', color: 'red' },
-    { day: 'Wednesday', workout: 'Endurance Ride', intensity: 'Medium', duration: '90 min', color: 'blue' },
-    { day: 'Thursday', workout: 'Recovery Spin', intensity: 'Low', duration: '30 min', color: 'green' },
-    { day: 'Friday', workout: 'Tempo Training', intensity: 'High', duration: '60 min', color: 'orange' },
-    { day: 'Saturday', workout: 'Hill Climbing', intensity: 'High', duration: '75 min', color: 'purple' },
-    { day: 'Sunday', workout: 'Long Ride', intensity: 'Medium', duration: '120 min', color: 'indigo' },
-  ];
+const CaretLeftIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+    <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path>
+  </svg>
+);
 
-  const monthlyOverview = [
-    { week: 'Week 1', focus: 'Base Building', load: '8 hours', progress: 85 },
-    { week: 'Week 2', focus: 'Intensity', load: '9 hours', progress: 92 },
-    { week: 'Week 3', focus: 'Peak Training', load: '10 hours', progress: 78 },
-    { week: 'Week 4', focus: 'Recovery', load: '6 hours', progress: 100 },
-  ];
+const CaretRightIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+    <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+  </svg>
+);
+
+const ArrowRightIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+    <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path>
+  </svg>
+);
+
+const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const dates = Array.from({ length: 30 }, (_, i) => i + 1);
+
+const weeklyPlan = [
+    { day: 'Monday', task: 'Interval Training' },
+    { day: 'Tuesday', task: 'Endurance Ride' },
+    { day: 'Wednesday', task: 'Rest Day' },
+    { day: 'Thursday', task: 'Hill Repeats' },
+    { day: 'Friday', task: 'Recovery Ride' },
+    { day: 'Saturday', task: 'Long Ride' },
+    { day: 'Sunday', task: 'Active Recovery' },
+];
+
+export default function WorkoutPage() {
+  const { user, logout } = useAuth();
+
+  // Get the current month and year
+  const currentDate = new Date();
+  const month = currentDate.toLocaleString('default', { month: 'long' });
+  const year = currentDate.getFullYear();
+  const today = currentDate.getDate();
+
+  // Calculate the day of the week for the first day of the month
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const startingDayOfWeek = firstDayOfMonth.getDay(); // 0 for Sunday, 1 for Monday, etc.
 
   return (
-    <PageLayout title="Workout Schedule">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        
-        {/* View Toggle */}
-        <div className="mb-6">
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-2 border border-slate-700/50 inline-flex">
-            <button
-              onClick={() => setViewMode('weekly')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-                viewMode === 'weekly'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700'
-              }`}
-            >
-              📅 Weekly View
-            </button>
-            <button
-              onClick={() => setViewMode('monthly')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-                viewMode === 'monthly'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700'
-              }`}
-            >
-              📊 Monthly View
-            </button>
-          </div>
+    <div className="relative flex size-full min-h-screen flex-col bg-[#101a23] group/design-root overflow-x-hidden">
+      <Header user={user} onLogout={logout} />
+      <main className="flex-grow pb-24">
+        <div className="flex items-center bg-[#101a23] p-4 pb-2 justify-between">
+          <button className="text-white flex size-12 shrink-0 items-center">
+            <ArrowLeftIcon />
+          </button>
+          <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Workout Schedule</h2>
         </div>
-
-        {/* Training Overview */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
-            <h2 className="text-2xl font-bold mb-2">🦈 Apex Training Schedule</h2>
-            <p className="text-blue-100">Unleash your predatory performance with structured training</p>
-          </div>
-        </div>
-
-        {viewMode === 'weekly' ? (
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-white mb-6">This Week&apos;s Training Plan</h3>
-            
-            <div className="grid gap-4">
-              {weeklyWorkouts.map((workout, workoutIndex) => (
-                <div key={workoutIndex} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 hover:bg-slate-800/70 transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-4 h-4 rounded-full ${
-                        workout.color === 'red' ? 'bg-red-500' :
-                        workout.color === 'blue' ? 'bg-blue-500' :
-                        workout.color === 'green' ? 'bg-green-500' :
-                        workout.color === 'orange' ? 'bg-orange-500' :
-                        workout.color === 'purple' ? 'bg-purple-500' :
-                        workout.color === 'indigo' ? 'bg-indigo-500' :
-                        'bg-slate-500'
-                      }`} />
-                      <div>
-                        <h4 className="text-lg font-semibold text-white">{workout.day}</h4>
-                        <p className="text-slate-300">{workout.workout}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-medium">{workout.duration}</p>
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                        workout.intensity === 'High' ? 'bg-red-500/20 text-red-400' :
-                        workout.intensity === 'Medium' ? 'bg-orange-500/20 text-orange-400' :
-                        workout.intensity === 'Low' ? 'bg-green-500/20 text-green-400' :
-                        'bg-slate-500/20 text-slate-400'
-                      }`}>
-                        {workout.intensity}
-                      </span>
-                    </div>
-                  </div>
+        <h3 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Monthly Plan</h3>
+        <div className="flex flex-wrap items-center justify-center gap-6 p-4">
+          <div className="flex min-w-72 max-w-[336px] flex-1 flex-col gap-0.5">
+            <div className="flex items-center p-1 justify-between">
+              <button>
+                <div className="text-white flex size-10 items-center justify-center">
+                  <CaretLeftIcon />
                 </div>
+              </button>
+              <p className="text-white text-base font-bold leading-tight flex-1 text-center">{month} {year}</p>
+              <button>
+                <div className="text-white flex size-10 items-center justify-center">
+                  <CaretRightIcon />
+                </div>
+              </button>
+            </div>
+            <div className="grid grid-cols-7">
+              {daysOfWeek.map((day, index) => (
+                <p key={index} className="text-white text-[13px] font-bold leading-normal tracking-[0.015em] flex h-12 w-full items-center justify-center pb-0.5">{day}</p>
+              ))}
+              {/* Add empty divs for days before the 1st of the month */}
+              {Array.from({ length: startingDayOfWeek }).map((_, index) => (
+                <div key={`empty-${index}`} />
+              ))}
+              {dates.map((date) => (
+                 <button key={date} className="h-12 w-full text-white text-sm font-medium leading-normal">
+                    <div className={`flex size-full items-center justify-center rounded-full ${date === today ? 'bg-[#0c7ff2]' : ''}`}>
+                        {date}
+                    </div>
+                </button>
               ))}
             </div>
-
-            {/* Training Compliance */}
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
-              <h4 className="text-xl font-bold text-white mb-4">📈 Weekly Progress</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-blue-400 mb-1">6/7</div>
-                  <div className="text-slate-300 text-sm">Sessions Complete</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-400 mb-1">405</div>
-                  <div className="text-slate-300 text-sm">Total Minutes</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-400 mb-1">286W</div>
-                  <div className="text-slate-300 text-sm">Avg Power</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-400 mb-1">94%</div>
-                  <div className="text-slate-300 text-sm">Compliance</div>
-                </div>
-              </div>
-            </div>
           </div>
-        ) : (
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-white mb-6">Monthly Training Overview</h3>
-            
-            <div className="grid gap-4">
-              {monthlyOverview.map((week, weekIndex) => (
-                <div key={weekIndex} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 hover:bg-slate-800/70 transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h4 className="text-lg font-semibold text-white">{week.week}</h4>
-                      <p className="text-slate-300">{week.focus}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-medium">{week.load}</p>
-                      <p className="text-slate-400 text-sm">Training Load</p>
-                    </div>
-                  </div>
-                  <div className="w-full bg-slate-700 rounded-full h-3">
-                    <div 
-                      className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${week.progress}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between mt-2 text-sm">
-                    <span className="text-slate-400">Progress</span>
-                    <span className="text-blue-400 font-medium">{week.progress}%</span>
-                  </div>
+        </div>
+        <h3 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Weekly Plan</h3>
+        {weeklyPlan.map((item, index) => (
+            <div key={index} className="flex items-center gap-4 bg-[#101a23] px-4 min-h-[72px] py-2 justify-between">
+                <div className="flex flex-col justify-center">
+                    <p className="text-white text-base font-medium leading-normal line-clamp-1">{item.day}</p>
+                    <p className="text-[#90adcb] text-sm font-normal leading-normal line-clamp-2">{item.task}</p>
                 </div>
-              ))}
+                <div className="shrink-0">
+                    <button className="text-white flex size-7 items-center justify-center">
+                        <ArrowRightIcon />
+                    </button>
+                </div>
             </div>
-
-            {/* Monthly Summary */}
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
-              <h4 className="text-xl font-bold text-white mb-4">🏆 Monthly Performance Summary</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-blue-400 mb-1">33</div>
-                  <div className="text-slate-300 text-sm">Total Hours</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-400 mb-1">28</div>
-                  <div className="text-slate-300 text-sm">Sessions</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-400 mb-1">+12W</div>
-                  <div className="text-slate-300 text-sm">FTP Gain</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-400 mb-1">89%</div>
-                  <div className="text-slate-300 text-sm">Monthly Goal</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </PageLayout>
+        ))}
+      </main>
+      <BottomNavigation />
+    </div>
   );
 }
