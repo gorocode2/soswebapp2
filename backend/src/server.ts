@@ -10,6 +10,7 @@ import { Pool } from 'pg';
 // Import routes
 import apiRoutes from './routes/api';
 import debugRoutes from './routes/debug';
+import workoutLibraryRoutes from './routes/workoutLibrary';
 
 // Load environment variables based on NODE_ENV
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
@@ -88,8 +89,80 @@ const testDatabaseConnection = async () => {
   }
 };
 
-// Test database connection
-testDatabaseConnection();
+// Test workout library tables
+const testWorkoutLibraryTables = async () => {
+  try {
+    const client = await db.connect();
+    
+    // Check if workout library tables exist
+    const tablesResult = await client.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name LIKE 'workout%'
+      ORDER BY table_name;
+    `);
+    
+    const workoutTables = tablesResult.rows.map(row => row.table_name);
+    const expectedTables = [
+      'workout_assignments',
+      'workout_categories', 
+      'workout_execution_results',
+      'workout_library',
+      'workout_library_categories',
+      'workout_segments'
+    ];
+    
+    const missingTables = expectedTables.filter(table => !workoutTables.includes(table));
+    
+    console.log('🦈 ================================');
+    console.log('   Workout Library Tables Check');
+    console.log('🦈 ================================');
+    
+    if (missingTables.length === 0) {
+      console.log('✅ All workout library tables found!');
+      
+      // Get some basic stats
+      const statsResult = await client.query(`
+        SELECT 
+          'workout_library' as table_name, COUNT(*) as records FROM workout_library
+        UNION ALL
+        SELECT 
+          'workout_categories' as table_name, COUNT(*) as records FROM workout_categories
+        UNION ALL
+        SELECT 
+          'workout_segments' as table_name, COUNT(*) as records FROM workout_segments
+        ORDER BY table_name;
+      `);
+      
+      console.log('📊 Table Statistics:');
+      statsResult.rows.forEach(row => {
+        console.log(`   - ${row.table_name}: ${row.records} records`);
+      });
+    } else {
+      console.log('⚠️  Missing workout library tables:');
+      missingTables.forEach(table => console.log(`   - ${table}`));
+      console.log('💡 Run the workout_library_migration.sql script to create these tables');
+    }
+    
+    console.log('🦈 ================================');
+    
+    client.release();
+    return missingTables.length === 0;
+  } catch (err) {
+    console.log('🦈 ================================');
+    console.log('   Workout Library Check FAILED');
+    console.log('🦈 ================================');
+    console.error('❌ Workout library check error:', err);
+    console.log('🦈 ================================');
+    return false;
+  }
+};
+
+// Test database connection and workout library
+testDatabaseConnection().then(() => {
+  testWorkoutLibraryTables();
+});
 
 // 🦈 Security Middleware - Production Grade
 if (process.env.NODE_ENV === 'production') {
@@ -211,7 +284,8 @@ app.get('/api/health', async (req: Request, res: Response) => {
       endpoints: {
         users: '/api/users',
         cycling: '/api/cycling',
-        training: '/api/training'
+        training: '/api/training',
+        workout_library: '/api/workout-library'
       }
     });
   } catch (error) {
@@ -225,6 +299,7 @@ app.get('/api/health', async (req: Request, res: Response) => {
 
 // API routes
 app.use('/api', apiRoutes);
+app.use('/api/workout-library', workoutLibraryRoutes);
 
 // Debug routes (only in development)
 if (process.env.NODE_ENV === 'development' || process.env.ENABLE_DEBUG === 'true') {
@@ -245,7 +320,8 @@ app.use('/*', (req: Request, res: Response) => {
       '/api/health - API specific health',
       '/api/users - User management',
       '/api/cycling - Cycling analytics',
-      '/api/training - Training programs'
+      '/api/training - Training programs',
+      '/api/workout-library - Workout library system'
     ]
   });
 });

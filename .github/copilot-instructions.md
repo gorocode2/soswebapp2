@@ -52,6 +52,31 @@ Base URL: `http://localhost:5000/api`
 - `/users` - User management and profiles
 - `/cycling` - Cycling sessions and analytics
 - `/training` - AI training programs and recommendations
+- `/workout-library` - Workout library system for structured training
+
+## Development Server Instructions
+**IMPORTANT**: Always use the correct directory paths when running development servers:
+
+### Backend Server
+```bash
+# Always run backend from the backend directory
+cd /Users/kamhangenilkamhange/Desktop/coding/2025/soswebapp2/backend && npm run dev
+```
+
+### Frontend Server
+```bash
+# Always run frontend from the frontend directory
+cd /Users/kamhangenilkamhange/Desktop/coding/2025/soswebapp2/frontend && npm run dev
+```
+
+### Database Operations
+```bash
+# PostgreSQL operations should be run from the backend directory
+cd /Users/kamhangenilkamhange/Desktop/coding/2025/soswebapp2/backend
+# Then run database scripts or migrations
+```
+
+**Note**: Never run `npm run dev` from the root `/soswebapp2` directory - always navigate to the specific service directory first.
 
 ## Code Style
 - Use functional components with hooks (frontend)
