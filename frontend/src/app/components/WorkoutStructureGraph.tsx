@@ -10,11 +10,13 @@ interface WorkoutStructureGraphProps {
   height?: number;
 }
 
-interface GraphPoint {
-  time: number;
+interface GraphSegment {
+  startTime: number;
+  duration: number;
   intensity: number;
   segmentType: string;
   segmentName: string;
+  repetitions: number;
 }
 
 export default function WorkoutStructureGraph({
@@ -23,9 +25,9 @@ export default function WorkoutStructureGraph({
   width = 800,
   height = 200
 }: WorkoutStructureGraphProps) {
-  // Calculate graph data points
-  const calculateGraphPoints = (): GraphPoint[] => {
-    const points: GraphPoint[] = [];
+  // Calculate graph segments for bar display
+  const calculateGraphSegments = (): GraphSegment[] => {
+    const graphSegments: GraphSegment[] = [];
     let currentTime = 0;
 
     segments.forEach((segment) => {
@@ -52,61 +54,49 @@ export default function WorkoutStructureGraph({
         // Handle intervals
         for (let rep = 0; rep < repetitions; rep++) {
           // Work interval
-          points.push({
-            time: currentTime,
+          graphSegments.push({
+            startTime: currentTime,
+            duration: segmentDuration,
             intensity,
             segmentType: segment.segment_type,
-            segmentName: segment.name
+            segmentName: segment.name,
+            repetitions: 1
           });
           currentTime += segmentDuration;
-          points.push({
-            time: currentTime,
-            intensity,
-            segmentType: segment.segment_type,
-            segmentName: segment.name
-          });
 
           // Rest between intervals (except after last rep)
           if (rep < repetitions - 1 && restDuration > 0) {
-            points.push({
-              time: currentTime,
+            graphSegments.push({
+              startTime: currentTime,
+              duration: restDuration,
               intensity: 50, // Recovery intensity
               segmentType: 'rest',
-              segmentName: 'Recovery'
+              segmentName: 'Recovery',
+              repetitions: 1
             });
             currentTime += restDuration;
-            points.push({
-              time: currentTime,
-              intensity: 50,
-              segmentType: 'rest',
-              segmentName: 'Recovery'
-            });
           }
         }
       } else {
         // Single segment
-        points.push({
-          time: currentTime,
+        graphSegments.push({
+          startTime: currentTime,
+          duration: segmentDuration,
           intensity,
           segmentType: segment.segment_type,
-          segmentName: segment.name
+          segmentName: segment.name,
+          repetitions: 1
         });
         currentTime += segmentDuration;
-        points.push({
-          time: currentTime,
-          intensity,
-          segmentType: segment.segment_type,
-          segmentName: segment.name
-        });
       }
     });
 
-    return points;
+    return graphSegments;
   };
 
-  const points = calculateGraphPoints();
-  const totalDuration = Math.max(...points.map(p => p.time));
-  const maxIntensity = Math.max(...points.map(p => p.intensity), 100);
+  const graphSegments = calculateGraphSegments();
+  const totalDuration = Math.max(...graphSegments.map(s => s.startTime + s.duration));
+  const maxIntensity = Math.max(...graphSegments.map(s => s.intensity), 100);
 
   // SVG dimensions and margins
   const margin = { top: 20, right: 40, bottom: 40, left: 50 };
@@ -116,55 +106,15 @@ export default function WorkoutStructureGraph({
   // Scale functions
   const scaleX = (time: number) => (time / totalDuration) * graphWidth;
   const scaleY = (intensity: number) => graphHeight - (intensity / maxIntensity) * graphHeight;
+  const scaleWidth = (duration: number) => (duration / totalDuration) * graphWidth;
 
-  // Generate path data
-  const generatePath = () => {
-    if (points.length === 0) return '';
-    
-    let path = `M ${scaleX(points[0].time)} ${scaleY(points[0].intensity)}`;
-    
-    for (let i = 1; i < points.length; i++) {
-      path += ` L ${scaleX(points[i].time)} ${scaleY(points[i].intensity)}`;
-    }
-    
-    return path;
-  };
-
-  // Get segment color
-  const getSegmentColor = (segmentType: string, intensity: number) => {
+  // Get intensity-based color
+  const getIntensityColor = (intensity: number): string => {
     if (intensity === 0) return '#6B7280'; // Gray for no data
-    
-    switch (segmentType) {
-      case 'warmup': return '#3B82F6'; // Blue
-      case 'work': 
-      case 'main':
-        if (intensity >= 90) return '#EF4444'; // Red for high intensity
-        if (intensity >= 75) return '#F59E0B'; // Orange for moderate-high
-        if (intensity >= 60) return '#10B981'; // Green for moderate
-        return '#6366F1'; // Indigo for easy
-      case 'rest':
-      case 'recovery': return '#22C55E'; // Green
-      case 'cooldown': return '#8B5CF6'; // Purple
-      default: return '#6B7280'; // Gray
-    }
-  };
-
-  // Create gradient fills for different intensity zones
-  const createGradients = () => {
-    const gradients = [];
-    for (let i = 0; i < points.length - 1; i++) {
-      const point = points[i];
-      const color = getSegmentColor(point.segmentType, point.intensity);
-      gradients.push(
-        <stop
-          key={i}
-          offset={`${(i / (points.length - 1)) * 100}%`}
-          stopColor={color}
-          stopOpacity={0.3}
-        />
-      );
-    }
-    return gradients;
+    if (intensity >= 90) return '#EF4444'; // Red for very high (≥90%)
+    if (intensity >= 75) return '#F59E0B'; // Orange for high (75-89%)
+    if (intensity >= 60) return '#EAB308'; // Yellow for mid (60-74%)
+    return '#22C55E'; // Green for low (<60%)
   };
 
   // Time axis labels
@@ -221,7 +171,7 @@ export default function WorkoutStructureGraph({
     );
   }
 
-  if (points.length === 0) {
+  if (graphSegments.length === 0) {
     return (
       <div className="bg-slate-700/30 rounded-lg p-6 text-center">
         <p className="text-slate-400">No workout structure data available</p>
@@ -243,12 +193,6 @@ export default function WorkoutStructureGraph({
       
       <div className="overflow-x-auto">
         <svg width={width} height={height} className="bg-slate-800/50 rounded">
-          <defs>
-            <linearGradient id="workoutGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              {createGradients()}
-            </linearGradient>
-          </defs>
-          
           <g transform={`translate(${margin.left}, ${margin.top})`}>
             {/* Grid lines */}
             {intensityLabels.map((_, i) => (
@@ -277,36 +221,49 @@ export default function WorkoutStructureGraph({
               />
             ))}
             
-            {/* Area fill */}
-            <path
-              d={`${generatePath()} L ${scaleX(points[points.length - 1].time)} ${graphHeight} L ${scaleX(points[0].time)} ${graphHeight} Z`}
-              fill="url(#workoutGradient)"
-            />
-            
-            {/* Main line */}
-            <path
-              d={generatePath()}
-              fill="none"
-              stroke="#06B6D4"
-              strokeWidth={2}
-            />
-            
-            {/* Data points */}
-            {points.map((point, i) => (
-              <circle
-                key={i}
-                cx={scaleX(point.time)}
-                cy={scaleY(point.intensity)}
-                r={3}
-                fill={getSegmentColor(point.segmentType, point.intensity)}
-                stroke="#FFFFFF"
-                strokeWidth={1}
-              >
-                <title>
-                  {point.segmentName} - {point.time}min - {point.intensity}%
-                </title>
-              </circle>
-            ))}
+            {/* Intensity bars */}
+            {graphSegments.map((segment, i) => {
+              const barX = scaleX(segment.startTime);
+              const barWidth = scaleWidth(segment.duration);
+              const barHeight = graphHeight - scaleY(segment.intensity);
+              const barY = scaleY(segment.intensity);
+              const color = getIntensityColor(segment.intensity);
+              
+              return (
+                <g key={i}>
+                  {/* Bar */}
+                  <rect
+                    x={barX}
+                    y={barY}
+                    width={barWidth}
+                    height={barHeight}
+                    fill={color}
+                    stroke="#FFFFFF"
+                    strokeWidth={0.5}
+                    opacity={0.8}
+                  >
+                    <title>
+                      {segment.segmentName} - {segment.startTime}-{segment.startTime + segment.duration}min - {segment.intensity}%
+                    </title>
+                  </rect>
+                  
+                  {/* Segment label (show on wider bars) */}
+                  {barWidth > 30 && (
+                    <text
+                      x={barX + barWidth / 2}
+                      y={barY + barHeight / 2}
+                      textAnchor="middle"
+                      fontSize={10}
+                      fill="#FFFFFF"
+                      fontWeight="500"
+                      style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.7)' }}
+                    >
+                      {segment.intensity}%
+                    </text>
+                  )}
+                </g>
+              );
+            })}
             
             {/* Axes */}
             <line
@@ -357,27 +314,27 @@ export default function WorkoutStructureGraph({
         </svg>
       </div>
       
-      {/* Legend */}
+      {/* Updated Legend for intensity-based colors */}
       <div className="flex flex-wrap gap-4 mt-4 text-xs">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-          <span className="text-slate-300">Warmup</span>
+          <div className="w-3 h-3 rounded bg-green-500"></div>
+          <span className="text-slate-300">Low (&lt;60%)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <span className="text-slate-300">High Intensity</span>
+          <div className="w-3 h-3 rounded bg-yellow-500"></div>
+          <span className="text-slate-300">Mid (60-74%)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-          <span className="text-slate-300">Moderate-High</span>
+          <div className="w-3 h-3 rounded bg-orange-500"></div>
+          <span className="text-slate-300">High (75-89%)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          <span className="text-slate-300">Recovery</span>
+          <div className="w-3 h-3 rounded bg-red-500"></div>
+          <span className="text-slate-300">Very High (≥90%)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-          <span className="text-slate-300">Cooldown</span>
+          <div className="w-3 h-3 rounded bg-gray-500"></div>
+          <span className="text-slate-300">No Data</span>
         </div>
       </div>
     </div>
