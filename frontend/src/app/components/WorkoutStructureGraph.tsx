@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { WorkoutSegment } from '@/models/types';
+import { useTranslation } from '@/i18n';
 
 interface WorkoutStructureGraphProps {
   segments: WorkoutSegment[];
@@ -25,6 +26,8 @@ export default function WorkoutStructureGraph({
   width = 800,
   height = 200
 }: WorkoutStructureGraphProps) {
+  const { t } = useTranslation();
+  
   // Calculate graph segments for bar display
   const calculateGraphSegments = (): GraphSegment[] => {
     const graphSegments: GraphSegment[] = [];
@@ -174,7 +177,7 @@ export default function WorkoutStructureGraph({
   if (graphSegments.length === 0) {
     return (
       <div className="bg-slate-700/30 rounded-lg p-6 text-center">
-        <p className="text-slate-400">No workout structure data available</p>
+        <p className="text-slate-400">{t('workout.noStructure')}</p>
       </div>
     );
   }
@@ -182,12 +185,12 @@ export default function WorkoutStructureGraph({
   return (
     <div className="bg-slate-700/30 rounded-lg p-4 mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h4 className="text-lg font-semibold text-white">Workout Structure</h4>
+        <h4 className="text-lg font-semibold text-white">{t('workout.graph.title')}</h4>
         <div className="flex items-center gap-4 text-sm text-slate-400">
           <span>
-            {primaryControlParameter === 'hr' ? 'Heart Rate (% Max HR)' : 'Power (% FTP)'}
+            {primaryControlParameter === 'hr' ? t('workout.graph.heartRate') : t('workout.graph.power')}
           </span>
-          <span>Total: {totalDuration} min</span>
+          <span>{t('workout.graph.total')}: {totalDuration} {t('time.minutes')}</span>
         </div>
       </div>
       
@@ -297,7 +300,7 @@ export default function WorkoutStructureGraph({
             fill="#9CA3AF"
             fontWeight="500"
           >
-            Time (minutes)
+            {t('workout.graph.timeAxis')}
           </text>
           
           <text
@@ -309,7 +312,7 @@ export default function WorkoutStructureGraph({
             fontWeight="500"
             transform={`rotate(-90, 15, ${height / 2})`}
           >
-            {primaryControlParameter === 'hr' ? '% Max HR' : '% FTP'}
+            {primaryControlParameter === 'hr' ? t('workout.graph.intensityAxis') : t('workout.graph.powerAxis')}
           </text>
         </svg>
       </div>
@@ -318,23 +321,23 @@ export default function WorkoutStructureGraph({
       <div className="flex flex-wrap gap-4 mt-4 text-xs">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-green-500"></div>
-          <span className="text-slate-300">Low (&lt;60%)</span>
+          <span className="text-slate-300">{t('workout.graph.intensityLevels.low')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-yellow-500"></div>
-          <span className="text-slate-300">Mid (60-74%)</span>
+          <span className="text-slate-300">{t('workout.graph.intensityLevels.mid')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-orange-500"></div>
-          <span className="text-slate-300">High (75-89%)</span>
+          <span className="text-slate-300">{t('workout.graph.intensityLevels.high')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-red-500"></div>
-          <span className="text-slate-300">Very High (≥90%)</span>
+          <span className="text-slate-300">{t('workout.graph.intensityLevels.veryHigh')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-gray-500"></div>
-          <span className="text-slate-300">No Data</span>
+          <span className="text-slate-300">{t('workout.graph.intensityLevels.noData')}</span>
         </div>
       </div>
     </div>

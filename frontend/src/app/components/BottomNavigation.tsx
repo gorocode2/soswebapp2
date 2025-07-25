@@ -2,22 +2,24 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslation } from '@/i18n';
 
 interface BottomNavItem {
   href: string;
   icon: string;
-  label: string;
+  translationKey: string;
 }
 
 const navItems: BottomNavItem[] = [
-  { href: '/dashboard', icon: '📊', label: 'Dashboard' },
-  { href: '/workout', icon: '💪', label: 'Workout' },
-  { href: '/videos', icon: '🎥', label: 'Videos' },
-  { href: '/profile', icon: '👤', label: 'Profile' },
+  { href: '/dashboard', icon: '📊', translationKey: 'nav.dashboard' },
+  { href: '/workout', icon: '💪', translationKey: 'nav.workout' },
+  { href: '/videos', icon: '🎥', translationKey: 'nav.videos' },
+  { href: '/profile', icon: '👤', translationKey: 'nav.profile' },
 ];
 
 export default function BottomNavigation() {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 z-50">
@@ -35,7 +37,7 @@ export default function BottomNavigation() {
               }`}
             >
               <span className="text-xl mb-1">{item.icon}</span>
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className="text-xs font-medium">{t(item.translationKey)}</span>
             </Link>
           );
         })}

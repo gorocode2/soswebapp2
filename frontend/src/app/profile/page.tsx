@@ -4,6 +4,7 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/app/components/Header';
 import BottomNavigation from '@/app/components/BottomNavigation';
+import { LanguageSelector, useTranslation } from '@/i18n';
 
 // SVG Icon Components
 const ArrowLeftIcon = () => (
@@ -73,6 +74,7 @@ const supportItems = [
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <div className="relative flex size-full min-h-screen flex-col bg-[#101a23] group/design-root overflow-x-hidden">
@@ -82,7 +84,7 @@ export default function ProfilePage() {
           <button className="text-white flex size-12 shrink-0 items-center">
             <ArrowLeftIcon />
           </button>
-          <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Profile</h2>
+          <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">{t('profile.title')}</h2>
         </div>
         
         {/* Profile Section */}
@@ -106,8 +108,14 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        {/* Language Settings Section */}
+        <h3 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">{t('profile.preferences')}</h3>
+        <div className="p-4">
+          <LanguageSelector />
+        </div>
+
         {/* Account Section */}
-        <h3 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Account</h3>
+        <h3 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">{t('profile.personalInfo')}</h3>
         {accountItems.map((item, index) => (
           <div key={index} className="flex items-center gap-4 bg-[#101a23] px-4 min-h-14">
             <div className="text-white flex items-center justify-center rounded-lg bg-[#223649] shrink-0 size-10">
@@ -118,7 +126,7 @@ export default function ProfilePage() {
         ))}
 
         {/* Training Section */}
-        <h3 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Training</h3>
+        <h3 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">{t('profile.trainingSettings')}</h3>
         {trainingItems.map((item, index) => (
           <div key={index} className="flex items-center gap-4 bg-[#101a23] px-4 min-h-14">
             <div className="text-white flex items-center justify-center rounded-lg bg-[#223649] shrink-0 size-10">

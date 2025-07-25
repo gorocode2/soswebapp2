@@ -5,6 +5,7 @@ import { CalendarWorkout } from '@/types/workout';
 import { WorkoutLibraryDetailResponse, WorkoutSegment } from '@/models/types';
 import workoutService from '@/services/workoutService';
 import WorkoutStructureGraph from './WorkoutStructureGraph';
+import { useTranslation } from '@/i18n';
 
 // SVG Icon Components
 const XIcon = () => (
@@ -52,6 +53,7 @@ export default function WorkoutDetailModal({
   onStartWorkout,
   onCompleteWorkout
 }: WorkoutDetailModalProps) {
+  const { t } = useTranslation();
   const [workoutDetails, setWorkoutDetails] = useState<WorkoutLibraryDetailResponse | null>(null);
   const [segments, setSegments] = useState<WorkoutSegment[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,23 +90,11 @@ export default function WorkoutDetailModal({
     }
   }, [isOpen, workout]);
 
-  // Helper functions for mock data
+  // Helper functions for workout data
   const getWorkoutDescription = (type: string): string => {
-    switch (type.toLowerCase()) {
-      case 'threshold':
-        return 'Classic threshold workout to build lactate buffering capacity and FTP. Perfect for intermediate to advanced cyclists looking to improve their sustained power output.';
-      case 'vo2max':
-        return 'High-intensity intervals to maximize oxygen uptake and anaerobic power. These efforts will push you to your limits and significantly improve your top-end fitness.';
-      case 'zone2':
-      case 'endurance':
-        return 'Long steady aerobic effort to build your base fitness and fat-burning capacity. The foundation of all cycling fitness.';
-      case 'sprint':
-        return 'Short explosive efforts to develop neuromuscular power and sprint capacity. Perfect for developing your finishing kick.';
-      case 'recovery':
-        return 'Gentle active recovery session to promote blood flow and aid recovery between hard training sessions.';
-      default:
-        return 'Structured cycling workout designed to improve your fitness and performance.';
-    }
+    const typeKey = type.toLowerCase();
+    const descriptionKey = `workout.descriptions.${typeKey}`;
+    return t(descriptionKey) !== descriptionKey ? t(descriptionKey) : t('workout.descriptions.default');
   };
 
   const getSegmentTypeColor = (type: string): string => {
@@ -115,6 +105,11 @@ export default function WorkoutDetailModal({
       case 'cooldown': return 'bg-purple-500/20 text-purple-400 border-purple-500/50';
       default: return 'bg-slate-500/20 text-slate-400 border-slate-500/50';
     }
+  };
+
+  const getSegmentTypeName = (type: string): string => {
+    const segmentKey = `workout.segments.${type}`;
+    return t(segmentKey) !== segmentKey ? t(segmentKey) : type.toUpperCase();
   };
 
   const getWorkoutTypeColor = (type: string): string => {
@@ -177,7 +172,9 @@ export default function WorkoutDetailModal({
         <div className="flex items-center justify-between p-6 border-b border-slate-700">
           <div className="flex items-center gap-4">
             <div className={`px-3 py-1 rounded-full text-sm font-medium text-white ${getWorkoutTypeColor(workout.type)}`}>
-              {workout.type.toUpperCase()}
+              {t(`workout.types.${workout.type.toLowerCase()}`) !== `workout.types.${workout.type.toLowerCase()}` 
+                ? t(`workout.types.${workout.type.toLowerCase()}`) 
+                : workout.type.toUpperCase()}
             </div>
             <div className="flex">
               {getDifficultyStars(workout.difficulty)}
@@ -216,27 +213,35 @@ export default function WorkoutDetailModal({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-slate-700/50 p-3 rounded-lg text-center">
                   <ClockIcon className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
-                  <p className="text-sm text-slate-400">Duration</p>
-                  <p className="text-lg font-bold text-white">{getTotalDuration()} min</p>
+                  <p className="text-sm text-slate-400">{t('workout.duration')}</p>
+                  <p className="text-lg font-bold text-white">{getTotalDuration()} {t('time.minutes')}</p>
                 </div>
                 <div className="bg-slate-700/50 p-3 rounded-lg text-center">
                   <FireIcon className="w-5 h-5 text-yellow-400 mx-auto mb-1" />
-                  <p className="text-sm text-slate-400">Difficulty</p>
+                  <p className="text-sm text-slate-400">{t('workout.difficulty')}</p>
                   <p className="text-lg font-bold text-yellow-400">{workout.difficulty}/10</p>
                 </div>
                 <div className="bg-slate-700/50 p-3 rounded-lg text-center">
-                  <p className="text-sm text-slate-400">Status</p>
-                  <p className="text-lg font-bold text-cyan-400 capitalize">{workout.status.replace('_', ' ')}</p>
+                  <p className="text-sm text-slate-400">{t('workout.status')}</p>
+                  <p className="text-lg font-bold text-cyan-400 capitalize">
+                    {t(`workout.statuses.${workout.status}`) !== `workout.statuses.${workout.status}` 
+                      ? t(`workout.statuses.${workout.status}`) 
+                      : workout.status.replace('_', ' ')}
+                  </p>
                 </div>
                 <div className="bg-slate-700/50 p-3 rounded-lg text-center">
-                  <p className="text-sm text-slate-400">Priority</p>
-                  <p className="text-lg font-bold text-orange-400 capitalize">{workout.priority}</p>
+                  <p className="text-sm text-slate-400">{t('workout.priority')}</p>
+                  <p className="text-lg font-bold text-orange-400 capitalize">
+                    {t(`workout.priorities.${workout.priority}`) !== `workout.priorities.${workout.priority}` 
+                      ? t(`workout.priorities.${workout.priority}`) 
+                      : workout.priority}
+                  </p>
                 </div>
               </div>
 
               {workout.notes && (
                 <div className="bg-slate-700/30 p-4 rounded-lg mb-6">
-                  <h4 className="text-sm font-semibold text-slate-300 mb-2">Coach Notes:</h4>
+                  <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('workout.coachNotes')}:</h4>
                   <p className="text-slate-300 italic">{workout.notes}</p>
                 </div>
               )}
@@ -256,7 +261,7 @@ export default function WorkoutDetailModal({
 
             {/* Workout Segments */}
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-white mb-4">Workout Structure</h3>
+              <h3 className="text-xl font-bold text-white mb-4">{t('workout.structure')}</h3>
               {segments.length > 0 ? (
                 <div className="space-y-3">
                   {segments.map((segment, index) => (
@@ -271,12 +276,12 @@ export default function WorkoutDetailModal({
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <span className={`px-2 py-1 rounded text-xs font-medium border ${getSegmentTypeColor(segment.segment_type)}`}>
-                            {segment.segment_type.toUpperCase()}
+                            {getSegmentTypeName(segment.segment_type)}
                           </span>
                           <span className="text-white font-semibold">
-                            {segment.name && segment.name !== segment.segment_type ? segment.name : `${segment.segment_type} segment`}
+                            {segment.name && segment.name !== segment.segment_type ? segment.name : `${getSegmentTypeName(segment.segment_type)} segment`}
                           </span>
-                          <span className="text-slate-400">{segment.duration_minutes} min</span>
+                          <span className="text-slate-400">{segment.duration_minutes} {t('time.minutes')}</span>
                           {(segment.hr_min_percent || segment.hr_max_percent) && (
                             <span className="text-sm text-slate-400">
                               HR: {segment.hr_min_percent || 0}-{segment.hr_max_percent || 0}%
@@ -284,7 +289,7 @@ export default function WorkoutDetailModal({
                           )}
                           {(segment.power_min_percent || segment.power_max_percent) && (
                             <span className="text-sm text-slate-400">
-                              Power: {segment.power_min_percent || 0}-{segment.power_max_percent || 0}%
+                              {t('workout.graph.power')}: {segment.power_min_percent || 0}-{segment.power_max_percent || 0}%
                             </span>
                           )}
                           {segment.repetitions > 1 && (
@@ -300,7 +305,7 @@ export default function WorkoutDetailModal({
                         
                         {segment.coaching_notes && (
                           <p className="text-sm text-amber-300 italic mt-1">
-                            Coach: {segment.coaching_notes}
+                            {t('workout.coachNotes')}: {segment.coaching_notes}
                           </p>
                         )}
                       </div>
@@ -309,8 +314,8 @@ export default function WorkoutDetailModal({
                 </div>
               ) : (
                 <div className="text-center py-8 text-slate-400">
-                  <p className="mb-2">Detailed workout structure not available</p>
-                  <p className="text-sm">This workout will be structured during execution</p>
+                  <p className="mb-2">{t('workout.noStructure')}</p>
+                  <p className="text-sm">{t('workout.structureNote')}</p>
                 </div>
               )}
             </div>
@@ -323,7 +328,7 @@ export default function WorkoutDetailModal({
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-semibold transition-colors"
                 >
                   <PlayIcon />
-                  Start Workout
+                  {t('workout.startWorkout')}
                 </button>
               )}
               
@@ -333,7 +338,7 @@ export default function WorkoutDetailModal({
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-semibold transition-colors"
                 >
                   <CheckIcon />
-                  Mark Complete
+                  {t('workout.completeWorkout')}
                 </button>
               )}
               
@@ -341,7 +346,7 @@ export default function WorkoutDetailModal({
                 onClick={onClose}
                 className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg font-semibold transition-colors"
               >
-                Close
+                {t('common.close')}
               </button>
             </div>
           </div>
