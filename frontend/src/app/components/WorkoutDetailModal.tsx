@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { CalendarWorkout } from '@/types/workout';
 import { WorkoutLibraryDetailResponse, WorkoutSegment } from '@/models/types';
 import workoutService from '@/services/workoutService';
+import WorkoutStructureGraph from './WorkoutStructureGraph';
 
 // SVG Icon Components
 const XIcon = () => (
@@ -103,35 +104,6 @@ export default function WorkoutDetailModal({
         return 'Gentle active recovery session to promote blood flow and aid recovery between hard training sessions.';
       default:
         return 'Structured cycling workout designed to improve your fitness and performance.';
-    }
-  };
-
-  const getWorkoutTags = (type: string): string[] => {
-    switch (type.toLowerCase()) {
-      case 'threshold':
-        return ['threshold', 'ftp', 'lactate', 'intermediate', 'structured'];
-      case 'vo2max':
-        return ['vo2max', 'anaerobic', 'hard', 'advanced', 'intervals'];
-      case 'zone2':
-      case 'endurance':
-        return ['endurance', 'zone2', 'base', 'aerobic', 'beginner-friendly'];
-      case 'sprint':
-        return ['sprint', 'neuromuscular', 'power', 'explosive', 'advanced'];
-      case 'recovery':
-        return ['recovery', 'easy', 'regeneration', 'active-recovery', 'all-levels'];
-      default:
-        return ['cycling', 'training', 'fitness'];
-    }
-  };
-
-  const getMockSegmentCount = (type: string): number => {
-    switch (type.toLowerCase()) {
-      case 'threshold': return 4;
-      case 'vo2max': return 3;
-      case 'zone2': case 'endurance': return 3;
-      case 'sprint': return 3;
-      case 'recovery': return 1;
-      default: return 3;
     }
   };
 
@@ -269,6 +241,18 @@ export default function WorkoutDetailModal({
                 </div>
               )}
             </div>
+
+            {/* Workout Structure Graph */}
+            {segments.length > 0 && (
+              <WorkoutStructureGraph
+                segments={segments}
+                primaryControlParameter={
+                  workoutDetails?.primary_control_parameter === 'power' ? 'power' : 'hr'
+                }
+                width={800}
+                height={200}
+              />
+            )}
 
             {/* Workout Segments */}
             <div className="mb-6">
