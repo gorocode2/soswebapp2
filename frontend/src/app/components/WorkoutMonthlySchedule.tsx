@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { CalendarWorkout, MonthlyPlan } from '@/types/workout';
 import workoutService from '@/services/workoutService';
 
@@ -89,7 +89,7 @@ function WorkoutMonthlySchedule({
       isMounted = false;
       clearTimeout(timeoutId);
     };
-  }, [userId, currentDate.getFullYear(), currentDate.getMonth()]);
+  }, [userId, currentDate]);
 
   // Get workouts for a specific date - memoized for performance
   const getWorkoutsForDate = useCallback((date: number): CalendarWorkout[] => {
@@ -103,7 +103,7 @@ function WorkoutMonthlySchedule({
     const dateString = `${year}-${month}-${day}`;
     
     return monthlyPlan.workouts.filter(workout => workout.date === dateString);
-  }, [monthlyPlan, currentDate.getFullYear(), currentDate.getMonth()]);
+  }, [monthlyPlan, currentDate]);
 
   // Get workout status color
   const getWorkoutStatusColor = (status: string): string => {
@@ -234,7 +234,7 @@ function WorkoutMonthlySchedule({
               {/* Workout indicators */}
               {hasWorkouts && (
                 <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-1">
-                  {workouts.slice(0, 3).map((workout, index) => (
+                  {workouts.slice(0, 3).map((workout) => (
                     <div
                       key={workout.assignment_id}
                       className={`

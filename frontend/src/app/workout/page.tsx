@@ -22,8 +22,8 @@ export default function WorkoutPage() {
   const userId = user?.id || 34;
 
   // Memoize dates to prevent unnecessary re-renders
-  const memoizedCurrentDate = useMemo(() => currentDate, [currentDate.getTime()]);
-  const memoizedCurrentWeekStart = useMemo(() => currentWeekStart, [currentWeekStart.getTime()]);
+  const memoizedCurrentDate = useMemo(() => currentDate, [currentDate]);
+  const memoizedCurrentWeekStart = useMemo(() => currentWeekStart, [currentWeekStart]);
 
   const handleMonthChange = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate);

@@ -11,9 +11,9 @@ import {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
 class WorkoutService {
-  private cache = new Map<string, { data: any; timestamp: number }>();
+  private cache = new Map<string, { data: unknown; timestamp: number }>();
   private cacheTimeout = 30000; // 30 seconds cache
-  private pendingRequests = new Map<string, Promise<any>>();
+  private pendingRequests = new Map<string, Promise<unknown>>();
 
   private getCacheKey(endpoint: string, options?: RequestInit): string {
     const method = options?.method || 'GET';
@@ -33,12 +33,12 @@ class WorkoutService {
       // Check cache first
       const cached = this.cache.get(cacheKey);
       if (cached && this.isCacheValid(cached.timestamp)) {
-        return cached.data;
+        return cached.data as T;
       }
 
       // Check if request is already pending to prevent duplicate calls
       if (this.pendingRequests.has(cacheKey)) {
-        return this.pendingRequests.get(cacheKey);
+        return this.pendingRequests.get(cacheKey) as Promise<T>;
       }
     }
 
@@ -149,11 +149,11 @@ class WorkoutService {
   }
 
   // Get workout assignments with date range
-  async getAssignmentsByDateRange(userId: number, startDate: string, endDate: string, retryCount = 0): Promise<{assignments: any[], total: number}> {
+  async getAssignmentsByDateRange(userId: number, startDate: string, endDate: string, retryCount = 0): Promise<{assignments: WorkoutAssignment[], total: number}> {
     const maxRetries = 2;
     
     try {
-      const response = await this.fetchApi<{assignments: any[], total: number}>(`/workout-library/assignments?assigned_to_user_id=${userId}&scheduled_date_from=${startDate}&scheduled_date_to=${endDate}`);
+      const response = await this.fetchApi<{assignments: WorkoutAssignment[], total: number}>(`/workout-library/assignments?assigned_to_user_id=${userId}&scheduled_date_from=${startDate}&scheduled_date_to=${endDate}`);
       return response;
     } catch (error) {
       console.error(`🦈 Error fetching assignments (attempt ${retryCount + 1}):`, error);

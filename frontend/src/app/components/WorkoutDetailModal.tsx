@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { CalendarWorkout, WorkoutTemplate, WorkoutSegment } from '@/types/workout';
-import workoutService from '@/services/workoutService';
 
 // SVG Icon Components
 const XIcon = () => (
@@ -54,6 +53,43 @@ export default function WorkoutDetailModal({
   const [segments, setSegments] = useState<WorkoutSegment[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Generate mock segments for workout
+  const generateMockSegments = useCallback((type: string, duration: number): WorkoutSegment[] => {
+    const baseSegment = {
+      workout_library_id: workout?.id || 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    switch (type.toLowerCase()) {
+      case 'threshold':
+        return [
+          { ...baseSegment, id: 1, segment_order: 1, segment_type: 'warmup' as const, duration_minutes: 15, target_hr_percentage: 65, instructions: 'Easy spin to warm up legs and prepare for work' },
+          { ...baseSegment, id: 2, segment_order: 2, segment_type: 'work' as const, duration_minutes: 7, target_hr_percentage: 88, target_power_percentage: 95, instructions: 'First threshold interval - build to target and hold steady' },
+          { ...baseSegment, id: 3, segment_order: 3, segment_type: 'rest' as const, duration_minutes: 5, target_hr_percentage: 65, instructions: 'Easy recovery between intervals' },
+          { ...baseSegment, id: 4, segment_order: 4, segment_type: 'work' as const, duration_minutes: 7, target_hr_percentage: 88, target_power_percentage: 95, instructions: 'Second threshold interval - focus on smooth pedaling' },
+          { ...baseSegment, id: 5, segment_order: 5, segment_type: 'rest' as const, duration_minutes: 5, target_hr_percentage: 65, instructions: 'Easy recovery between intervals' },
+          { ...baseSegment, id: 6, segment_order: 6, segment_type: 'work' as const, duration_minutes: 7, target_hr_percentage: 88, target_power_percentage: 95, instructions: 'Final threshold interval - push through the burn!' },
+          { ...baseSegment, id: 7, segment_order: 7, segment_type: 'cooldown' as const, duration_minutes: 14, target_hr_percentage: 60, instructions: 'Easy spin to cool down and flush lactate' }
+        ];
+      
+      case 'vo2max':
+        return [
+          { ...baseSegment, id: 1, segment_order: 1, segment_type: 'warmup' as const, duration_minutes: 20, target_hr_percentage: 70, instructions: 'Progressive warm-up with some tempo efforts' },
+          { ...baseSegment, id: 2, segment_order: 2, segment_type: 'work' as const, duration_minutes: 3, target_hr_percentage: 95, target_power_percentage: 110, instructions: 'VO2 max interval - go deep!' },
+          { ...baseSegment, id: 3, segment_order: 3, segment_type: 'rest' as const, duration_minutes: 3, target_hr_percentage: 65, instructions: 'Active recovery - keep legs moving' },
+          { ...baseSegment, id: 4, segment_order: 4, segment_type: 'cooldown' as const, duration_minutes: 15, target_hr_percentage: 60, instructions: 'Easy spin to recover' }
+        ];
+      
+      default:
+        return [
+          { ...baseSegment, id: 1, segment_order: 1, segment_type: 'warmup' as const, duration_minutes: Math.round(duration * 0.2), target_hr_percentage: 65, instructions: 'Warm up gradually' },
+          { ...baseSegment, id: 2, segment_order: 2, segment_type: 'work' as const, duration_minutes: Math.round(duration * 0.6), target_hr_percentage: 75, instructions: 'Main workout effort' },
+          { ...baseSegment, id: 3, segment_order: 3, segment_type: 'cooldown' as const, duration_minutes: Math.round(duration * 0.2), target_hr_percentage: 60, instructions: 'Cool down and recover' }
+        ];
+    }
+  }, [workout?.id]);
+
   // Load workout details when modal opens
   useEffect(() => {
     if (isOpen && workout) {
@@ -99,7 +135,7 @@ export default function WorkoutDetailModal({
 
       loadWorkoutDetails();
     }
-  }, [isOpen, workout]);
+  }, [isOpen, workout, generateMockSegments]);
 
   // Helper functions for mock data
   const getWorkoutDescription = (type: string): string => {
@@ -146,42 +182,6 @@ export default function WorkoutDetailModal({
       case 'sprint': return 3;
       case 'recovery': return 1;
       default: return 3;
-    }
-  };
-
-  const generateMockSegments = (type: string, duration: number): WorkoutSegment[] => {
-    const baseSegment = {
-      workout_library_id: workout.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
-    switch (type.toLowerCase()) {
-      case 'threshold':
-        return [
-          { ...baseSegment, id: 1, segment_order: 1, segment_type: 'warmup' as const, duration_minutes: 15, target_hr_percentage: 65, instructions: 'Easy spin to warm up legs and prepare for work' },
-          { ...baseSegment, id: 2, segment_order: 2, segment_type: 'work' as const, duration_minutes: 7, target_hr_percentage: 88, target_power_percentage: 95, instructions: 'First threshold interval - build to target and hold steady' },
-          { ...baseSegment, id: 3, segment_order: 3, segment_type: 'rest' as const, duration_minutes: 5, target_hr_percentage: 65, instructions: 'Easy recovery between intervals' },
-          { ...baseSegment, id: 4, segment_order: 4, segment_type: 'work' as const, duration_minutes: 7, target_hr_percentage: 88, target_power_percentage: 95, instructions: 'Second threshold interval - focus on smooth pedaling' },
-          { ...baseSegment, id: 5, segment_order: 5, segment_type: 'rest' as const, duration_minutes: 5, target_hr_percentage: 65, instructions: 'Easy recovery between intervals' },
-          { ...baseSegment, id: 6, segment_order: 6, segment_type: 'work' as const, duration_minutes: 7, target_hr_percentage: 88, target_power_percentage: 95, instructions: 'Final threshold interval - push through the burn!' },
-          { ...baseSegment, id: 7, segment_order: 7, segment_type: 'cooldown' as const, duration_minutes: 14, target_hr_percentage: 60, instructions: 'Easy spin to cool down and flush lactate' }
-        ];
-      
-      case 'vo2max':
-        return [
-          { ...baseSegment, id: 1, segment_order: 1, segment_type: 'warmup' as const, duration_minutes: 20, target_hr_percentage: 70, instructions: 'Progressive warm-up with some tempo efforts' },
-          { ...baseSegment, id: 2, segment_order: 2, segment_type: 'work' as const, duration_minutes: 3, target_hr_percentage: 95, target_power_percentage: 110, instructions: 'VO2 max interval - go deep!' },
-          { ...baseSegment, id: 3, segment_order: 3, segment_type: 'rest' as const, duration_minutes: 3, target_hr_percentage: 65, instructions: 'Active recovery - keep legs moving' },
-          { ...baseSegment, id: 4, segment_order: 4, segment_type: 'cooldown' as const, duration_minutes: 15, target_hr_percentage: 60, instructions: 'Easy spin to recover' }
-        ];
-      
-      default:
-        return [
-          { ...baseSegment, id: 1, segment_order: 1, segment_type: 'warmup' as const, duration_minutes: Math.round(duration * 0.2), target_hr_percentage: 65, instructions: 'Warm up gradually' },
-          { ...baseSegment, id: 2, segment_order: 2, segment_type: 'work' as const, duration_minutes: Math.round(duration * 0.6), target_hr_percentage: 75, instructions: 'Main workout effort' },
-          { ...baseSegment, id: 3, segment_order: 3, segment_type: 'cooldown' as const, duration_minutes: Math.round(duration * 0.2), target_hr_percentage: 60, instructions: 'Cool down and recover' }
-        ];
     }
   };
 

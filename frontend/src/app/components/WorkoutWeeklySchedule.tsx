@@ -51,12 +51,11 @@ function WorkoutWeeklySchedule({
   const [error, setError] = useState<string | null>(null);
 
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const shortDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   // Calculate week dates - memoized to prevent recalculation
-  const { start: weekStart, end: weekEnd, dates: weekDates } = useMemo(() => {
+  const { start: weekStart, dates: weekDates } = useMemo(() => {
     return workoutService.getWeekDates(currentWeekStart);
-  }, [currentWeekStart.getTime()]);
+  }, [currentWeekStart]);
 
   // Load weekly workout plan
   useEffect(() => {
@@ -99,7 +98,7 @@ function WorkoutWeeklySchedule({
       isMounted = false;
       clearTimeout(timeoutId);
     };
-  }, [userId, weekStart.getTime()]); // Use getTime() for stable comparison
+  }, [userId, currentWeekStart, weekStart]); // Include weekStart as it's used in loadWeeklyPlan
 
   // Get workouts for a specific date - memoized for performance
   const getWorkoutsForDate = useCallback((date: Date): CalendarWorkout[] => {
