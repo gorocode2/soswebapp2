@@ -14,15 +14,13 @@ This is a full-stack "School of Sharks" AI cycling training platform consisting 
 ### Backend (`/backend`)
 - **Node.js + Express** RESTful API
 - **TypeScript** for type safety
-- **PostgreSQL** database integration
+- **PostgreSQL** database integration, database name is 'school_of_sharks'
 - **Security middleware** (Helmet, CORS, etc.)
 
 ## Brand & Theme Guidelines
 - **Theme**: High-tech, energetic, shark/predator-inspired
 - **Colors**: Ocean blues, cyans, and gradients
 - **Tone**: Motivational, competitive, cutting-edge
-- **Icons**: Use shark 🦈, cycling 🚴‍♂️, lightning ⚡, analytics 📈 emojis
-- **Language**: "Unleash your inner predator", "Dominate the road", "Apex performance"
 
 ## Development Guidelines
 
