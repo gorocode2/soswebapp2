@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { CalendarWorkout, WorkoutTemplate, WorkoutSegment } from '@/types/workout';
+import React, { useState, useEffect } from 'react';
+import { CalendarWorkout } from '@/types/workout';
+import { WorkoutLibraryDetailResponse, WorkoutSegment } from '@/models/types';
+import workoutService from '@/services/workoutService';
 
 // SVG Icon Components
 const XIcon = () => (
@@ -49,46 +51,9 @@ export default function WorkoutDetailModal({
   onStartWorkout,
   onCompleteWorkout
 }: WorkoutDetailModalProps) {
-  const [workoutDetails, setWorkoutDetails] = useState<WorkoutTemplate | null>(null);
+  const [workoutDetails, setWorkoutDetails] = useState<WorkoutLibraryDetailResponse | null>(null);
   const [segments, setSegments] = useState<WorkoutSegment[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // Generate mock segments for workout
-  const generateMockSegments = useCallback((type: string, duration: number): WorkoutSegment[] => {
-    const baseSegment = {
-      workout_library_id: workout?.id || 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
-    switch (type.toLowerCase()) {
-      case 'threshold':
-        return [
-          { ...baseSegment, id: 1, segment_order: 1, segment_type: 'warmup' as const, duration_minutes: 15, target_hr_percentage: 65, instructions: 'Easy spin to warm up legs and prepare for work' },
-          { ...baseSegment, id: 2, segment_order: 2, segment_type: 'work' as const, duration_minutes: 7, target_hr_percentage: 88, target_power_percentage: 95, instructions: 'First threshold interval - build to target and hold steady' },
-          { ...baseSegment, id: 3, segment_order: 3, segment_type: 'rest' as const, duration_minutes: 5, target_hr_percentage: 65, instructions: 'Easy recovery between intervals' },
-          { ...baseSegment, id: 4, segment_order: 4, segment_type: 'work' as const, duration_minutes: 7, target_hr_percentage: 88, target_power_percentage: 95, instructions: 'Second threshold interval - focus on smooth pedaling' },
-          { ...baseSegment, id: 5, segment_order: 5, segment_type: 'rest' as const, duration_minutes: 5, target_hr_percentage: 65, instructions: 'Easy recovery between intervals' },
-          { ...baseSegment, id: 6, segment_order: 6, segment_type: 'work' as const, duration_minutes: 7, target_hr_percentage: 88, target_power_percentage: 95, instructions: 'Final threshold interval - push through the burn!' },
-          { ...baseSegment, id: 7, segment_order: 7, segment_type: 'cooldown' as const, duration_minutes: 14, target_hr_percentage: 60, instructions: 'Easy spin to cool down and flush lactate' }
-        ];
-      
-      case 'vo2max':
-        return [
-          { ...baseSegment, id: 1, segment_order: 1, segment_type: 'warmup' as const, duration_minutes: 20, target_hr_percentage: 70, instructions: 'Progressive warm-up with some tempo efforts' },
-          { ...baseSegment, id: 2, segment_order: 2, segment_type: 'work' as const, duration_minutes: 3, target_hr_percentage: 95, target_power_percentage: 110, instructions: 'VO2 max interval - go deep!' },
-          { ...baseSegment, id: 3, segment_order: 3, segment_type: 'rest' as const, duration_minutes: 3, target_hr_percentage: 65, instructions: 'Active recovery - keep legs moving' },
-          { ...baseSegment, id: 4, segment_order: 4, segment_type: 'cooldown' as const, duration_minutes: 15, target_hr_percentage: 60, instructions: 'Easy spin to recover' }
-        ];
-      
-      default:
-        return [
-          { ...baseSegment, id: 1, segment_order: 1, segment_type: 'warmup' as const, duration_minutes: Math.round(duration * 0.2), target_hr_percentage: 65, instructions: 'Warm up gradually' },
-          { ...baseSegment, id: 2, segment_order: 2, segment_type: 'work' as const, duration_minutes: Math.round(duration * 0.6), target_hr_percentage: 75, instructions: 'Main workout effort' },
-          { ...baseSegment, id: 3, segment_order: 3, segment_type: 'cooldown' as const, duration_minutes: Math.round(duration * 0.2), target_hr_percentage: 60, instructions: 'Cool down and recover' }
-        ];
-    }
-  }, [workout?.id]);
 
   // Load workout details when modal opens
   useEffect(() => {
@@ -96,38 +61,23 @@ export default function WorkoutDetailModal({
       const loadWorkoutDetails = async () => {
         try {
           setLoading(true);
-          // For now, we'll use mock data since the detailed workout endpoint might not be fully implemented
-          // In a real implementation, you'd call: workoutService.getWorkoutDetails(workout.id)
+          console.log('🦈 Loading workout details for ID:', workout.id);
           
-          // Mock workout details based on the workout type
-          const mockDetails: WorkoutTemplate = {
-            id: workout.id,
-            name: workout.name,
-            description: getWorkoutDescription(workout.type),
-            training_type: workout.type,
-            primary_control_parameter: 'hr',
-            secondary_control_parameter: 'power',
-            estimated_duration_minutes: workout.duration,
-            difficulty_level: workout.difficulty,
-            tags: getWorkoutTags(workout.type),
-            created_by: 33,
-            is_public: true,
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            creator_username: 'coach_shark',
-            creator_first_name: 'Coach',
-            creator_last_name: 'Shark',
-            categories: [workout.type],
-            segment_count: getMockSegmentCount(workout.type).toString()
-          };
+          // workout.id is the workout_library_id
+          const workoutLibraryId = workout.id;
           
-          const mockSegments: WorkoutSegment[] = generateMockSegments(workout.type, workout.duration);
+          const workoutDetails = await workoutService.getWorkoutDetails(workoutLibraryId);
           
-          setWorkoutDetails(mockDetails);
-          setSegments(mockSegments);
+          console.log('🦈 Workout details loaded:', workoutDetails);
+          
+          setWorkoutDetails(workoutDetails);
+          setSegments(workoutDetails.segments || []);
         } catch (error) {
           console.error('Error loading workout details:', error);
+          // For now, if the API fails, we'll just show basic workout info
+          // without detailed segments structure
+          setWorkoutDetails(null);
+          setSegments([]);
         } finally {
           setLoading(false);
         }
@@ -135,7 +85,7 @@ export default function WorkoutDetailModal({
 
       loadWorkoutDetails();
     }
-  }, [isOpen, workout, generateMockSegments]);
+  }, [isOpen, workout]);
 
   // Helper functions for mock data
   const getWorkoutDescription = (type: string): string => {
@@ -227,6 +177,25 @@ export default function WorkoutDetailModal({
     onClose();
   };
 
+  // Calculate total duration from segments
+  const getTotalDuration = (): number => {
+    if (segments.length > 0) {
+      return segments.reduce((total, segment) => {
+        const segmentDuration = segment.duration_minutes || 0;
+        const repetitions = segment.repetitions || 1;
+        const restDuration = segment.rest_duration_minutes || 0;
+        
+        // For intervals, multiply by repetitions and add rest time
+        if (repetitions > 1) {
+          return total + (segmentDuration * repetitions) + (restDuration * (repetitions - 1));
+        }
+        return total + segmentDuration;
+      }, 0);
+    }
+    // Fallback to workout duration if no segments
+    return workout.duration;
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -268,13 +237,15 @@ export default function WorkoutDetailModal({
             {/* Workout Info */}
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-white mb-2">{workout.name}</h2>
-              <p className="text-slate-300 mb-4">{workoutDetails?.description}</p>
+              <p className="text-slate-300 mb-4">
+                {workoutDetails?.description || getWorkoutDescription(workout.type)}
+              </p>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-slate-700/50 p-3 rounded-lg text-center">
                   <ClockIcon className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
                   <p className="text-sm text-slate-400">Duration</p>
-                  <p className="text-lg font-bold text-white">{workout.duration} min</p>
+                  <p className="text-lg font-bold text-white">{getTotalDuration()} min</p>
                 </div>
                 <div className="bg-slate-700/50 p-3 rounded-lg text-center">
                   <FireIcon className="w-5 h-5 text-yellow-400 mx-auto mb-1" />
@@ -302,41 +273,62 @@ export default function WorkoutDetailModal({
             {/* Workout Segments */}
             <div className="mb-6">
               <h3 className="text-xl font-bold text-white mb-4">Workout Structure</h3>
-              <div className="space-y-3">
-                {segments.map((segment, index) => (
-                  <div
-                    key={segment.id}
-                    className="flex items-center gap-4 p-4 bg-slate-700/30 rounded-lg border border-slate-600"
-                  >
-                    <div className="flex-shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                      {index + 1}
-                    </div>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className={`px-2 py-1 rounded text-xs font-medium border ${getSegmentTypeColor(segment.segment_type)}`}>
-                          {segment.segment_type.toUpperCase()}
-                        </span>
-                        <span className="text-white font-semibold">{segment.duration_minutes} min</span>
-                        {segment.target_hr_percentage && (
-                          <span className="text-sm text-slate-400">
-                            HR: {segment.target_hr_percentage}%
-                          </span>
-                        )}
-                        {segment.target_power_percentage && (
-                          <span className="text-sm text-slate-400">
-                            Power: {segment.target_power_percentage}%
-                          </span>
-                        )}
+              {segments.length > 0 ? (
+                <div className="space-y-3">
+                  {segments.map((segment, index) => (
+                    <div
+                      key={segment.id}
+                      className="flex items-center gap-4 p-4 bg-slate-700/30 rounded-lg border border-slate-600"
+                    >
+                      <div className="flex-shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        {segment.segment_order || index + 1}
                       </div>
                       
-                      {segment.instructions && (
-                        <p className="text-sm text-slate-300">{segment.instructions}</p>
-                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className={`px-2 py-1 rounded text-xs font-medium border ${getSegmentTypeColor(segment.segment_type)}`}>
+                            {segment.segment_type.toUpperCase()}
+                          </span>
+                          <span className="text-white font-semibold">
+                            {segment.name && segment.name !== segment.segment_type ? segment.name : `${segment.segment_type} segment`}
+                          </span>
+                          <span className="text-slate-400">{segment.duration_minutes} min</span>
+                          {(segment.hr_min_percent || segment.hr_max_percent) && (
+                            <span className="text-sm text-slate-400">
+                              HR: {segment.hr_min_percent || 0}-{segment.hr_max_percent || 0}%
+                            </span>
+                          )}
+                          {(segment.power_min_percent || segment.power_max_percent) && (
+                            <span className="text-sm text-slate-400">
+                              Power: {segment.power_min_percent || 0}-{segment.power_max_percent || 0}%
+                            </span>
+                          )}
+                          {segment.repetitions > 1 && (
+                            <span className="text-sm text-cyan-400">
+                              {segment.repetitions}x
+                            </span>
+                          )}
+                        </div>
+                        
+                        {segment.instructions && (
+                          <p className="text-sm text-slate-300">{segment.instructions}</p>
+                        )}
+                        
+                        {segment.coaching_notes && (
+                          <p className="text-sm text-amber-300 italic mt-1">
+                            Coach: {segment.coaching_notes}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-slate-400">
+                  <p className="mb-2">Detailed workout structure not available</p>
+                  <p className="text-sm">This workout will be structured during execution</p>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}

@@ -7,6 +7,7 @@ import {
   MonthlyPlan,
   WeeklyPlan
 } from '@/types/workout';
+import { WorkoutLibraryDetailResponse } from '@/models/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
@@ -297,6 +298,12 @@ class WorkoutService {
     }
     
     return { start, end, dates };
+  }
+
+  // Get detailed workout information with segments
+  async getWorkoutDetails(workoutId: number): Promise<WorkoutLibraryDetailResponse> {
+    const response = await this.fetchApi<{ success: boolean; workout: WorkoutLibraryDetailResponse; message: string }>(`/workout-library/templates/${workoutId}`);
+    return response.workout;
   }
 
   // Get workout statistics

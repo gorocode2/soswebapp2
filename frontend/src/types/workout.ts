@@ -96,7 +96,7 @@ export interface WorkoutAssignmentFilters {
 
 // Calendar view types
 export interface CalendarWorkout {
-  id: number;
+  id: number; // This is the workout_library_id
   assignment_id: number;
   date: string;
   name: string;
