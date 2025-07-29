@@ -50,7 +50,7 @@ function WorkoutWeeklySchedule({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   // Calculate week dates - memoized to prevent recalculation
   const { start: weekStart, dates: weekDates } = useMemo(() => {

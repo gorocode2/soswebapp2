@@ -1,9 +1,28 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../../i18n';
+import WorkoutLibrary from '../../coach/components/WorkoutLibrary';
+
+// Type for workout from the library (matching WorkoutLibrary component interface)
+interface WorkoutFromLibrary {
+  id: number;
+  name: string;
+  description?: string;
+  training_type: string;
+  primary_control_parameter: string;
+  secondary_control_parameter?: string;
+  estimated_duration_minutes: number;
+  difficulty_level?: number;
+  tags?: string[];
+  created_by?: number;
+  is_public: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 interface WorkoutSession {
   id: number;
-  date: string;
+  date: string | Date; // Allow both string and Date
   name: string;
   type: 'threshold' | 'vo2max' | 'endurance' | 'sprint' | 'recovery';
   status: 'planned' | 'in_progress' | 'completed' | 'missed' | 'skipped' | 'started';
@@ -35,6 +54,7 @@ interface WorkoutCalendarProps {
   viewMode: 'month' | 'week' | 'day';
   onViewModeChange: (mode: 'month' | 'week' | 'day') => void;
   isLoading: boolean;
+  onAddWorkout?: (workout: WorkoutFromLibrary, date: Date) => void; // New prop for adding workouts
 }
 
 export default function WorkoutCalendar({
@@ -42,20 +62,26 @@ export default function WorkoutCalendar({
   selectedDate,
   onDateSelect,
   viewMode,
-  onViewModeChange,
-  isLoading
+  onViewModeChange: _,
+  isLoading,
+  onAddWorkout
 }: WorkoutCalendarProps) {
   const { t } = useLanguage();
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutSession | null>(null);
+  const [isWorkoutLibraryOpen, setIsWorkoutLibraryOpen] = useState(false);
+  const [selectedDateForWorkout, setSelectedDateForWorkout] = useState<Date | null>(null);
 
   // Debug: Log workouts when they change
   React.useEffect(() => {
     console.log('🗓️ WorkoutCalendar received workouts:', workouts);
     console.log('📅 Current selectedDate:', selectedDate);
+    console.log('🔢 Total workouts count:', workouts.length);
     if (workouts.length > 0) {
-      workouts.forEach(workout => {
-        console.log(`📋 Workout: ${workout.name} on ${workout.date}`);
+      workouts.forEach((workout, index) => {
+        console.log(`📋 Workout ${index + 1}: "${workout.name}" on ${workout.date} (type: ${workout.type})`);
       });
+    } else {
+      console.log('⚠️ No workouts found in WorkoutCalendar');
     }
   }, [workouts, selectedDate]);
 
@@ -102,13 +128,20 @@ export default function WorkoutCalendar({
     }
   };
 
-  // Generate calendar days for month view
+  // Generate calendar days for month view (Monday to Sunday)
   const generateCalendarDays = () => {
     const year = selectedDate.getFullYear();
     const month = selectedDate.getMonth();
     const firstDay = new Date(year, month, 1);
     const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    // Adjust to start with Monday (0 = Sunday, 1 = Monday, etc.)
+    // If Sunday (0), we need to go back 6 days to get Monday
+    // If Monday (1), we need to go back 0 days
+    // If Tuesday (2), we need to go back 1 day, etc.
+    const dayOfWeek = firstDay.getDay();
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startDate.setDate(startDate.getDate() - daysToSubtract);
 
     const days = [];
     const current = new Date(startDate);
@@ -121,12 +154,58 @@ export default function WorkoutCalendar({
     return days;
   };
 
+  // Generate week days for weekly view (Monday to Sunday)
+  const generateWeekDays = () => {
+    const days = [];
+    const startDate = new Date(selectedDate);
+    
+    // Get the start of the week (Monday)
+    const dayOfWeek = startDate.getDay();
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startDate.setDate(startDate.getDate() - daysToSubtract);
+    
+    // Generate 7 days of the week (Monday to Sunday)
+    for (let i = 0; i < 7; i++) {
+      days.push(new Date(startDate));
+      startDate.setDate(startDate.getDate() + 1);
+    }
+    
+    return days;
+  };
+
+  // Helper function to format date to YYYY-MM-DD using local timezone
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const getWorkoutsForDate = (date: Date) => {
-    const dateString = date.toISOString().split('T')[0];
-    return workouts.filter(workout => {
-      const workoutDateString = new Date(workout.date).toISOString().split('T')[0];
-      return workoutDateString === dateString;
+    const dateString = formatLocalDate(date);
+    console.log(`🔍 getWorkoutsForDate called for: ${dateString}`);
+    console.log(`🔍 Calendar date object:`, date);
+    console.log(`🔍 Total workouts available: ${workouts.length}`);
+    
+    const filteredWorkouts = workouts.filter(workout => {
+      // The backend sends dates in YYYY-MM-DD format, use them directly
+      let workoutDateString = workout.date;
+      
+      // If workout.date is a Date object, format it properly
+      if (workout.date instanceof Date) {
+        workoutDateString = formatLocalDate(workout.date);
+      } else if (typeof workout.date === 'string') {
+        // If it's already a string, extract just the date part (YYYY-MM-DD)
+        workoutDateString = workout.date.split('T')[0];
+      }
+      
+      const matches = workoutDateString === dateString;
+      console.log(`🔍 Workout "${workout.name}" date: ${workoutDateString} vs calendar date: ${dateString} = ${matches}`);
+      return matches;
     });
+    
+    console.log(`🔍 Found ${filteredWorkouts.length} workouts for ${dateString}`);
+    return filteredWorkouts;
   };
 
   const formatDate = (date: Date) => {
@@ -147,6 +226,19 @@ export default function WorkoutCalendar({
     return date.getMonth() === selectedDate.getMonth();
   };
 
+  const handleAddWorkout = (date: Date) => {
+    setSelectedDateForWorkout(date);
+    setIsWorkoutLibraryOpen(true);
+  };
+
+  const handleSelectWorkoutFromLibrary = (workout: WorkoutFromLibrary) => {
+    if (selectedDateForWorkout && onAddWorkout) {
+      onAddWorkout(workout, selectedDateForWorkout);
+      setIsWorkoutLibraryOpen(false);
+      setSelectedDateForWorkout(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="bg-slate-800/50 rounded-xl border border-[#314d68] p-6">
@@ -164,30 +256,6 @@ export default function WorkoutCalendar({
 
   return (
     <div className="bg-slate-800/50 rounded-xl border border-[#314d68] p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-white text-lg font-semibold">
-          {t('coach.calendar.title')}
-        </h3>
-        
-        {/* View Mode Selector */}
-        <div className="flex bg-slate-700/50 rounded-lg p-1">
-          {(['month', 'week', 'day'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => onViewModeChange(mode)}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 ${
-                viewMode === mode
-                  ? 'bg-blue-600 text-white'
-                  : 'text-[#94a3b8] hover:text-white'
-              }`}
-            >
-              {t(`coach.calendar.${mode}View`)}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Calendar Navigation */}
       <div className="flex items-center justify-between mb-6">
         <button
@@ -225,7 +293,7 @@ export default function WorkoutCalendar({
         <>
           {/* Week days header */}
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
               <div key={day} className="text-center text-[#94a3b8] text-sm font-medium py-2">
                 {day}
               </div>
@@ -277,6 +345,102 @@ export default function WorkoutCalendar({
           </div>
         </>
       )}
+
+      {/* Weekly View */}
+      <div className="mt-8">
+        <h4 className="text-white text-lg font-semibold mb-4 flex items-center">
+          📅 {t('coach.calendar.weekView')} - Week of {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        </h4>
+        
+        {/* Week days - one day per line */}
+        <div className="space-y-3">
+          {generateWeekDays().map((date, index) => {
+            const dayWorkouts = getWorkoutsForDate(date);
+            const isTodayDate = isToday(date);
+            const isSelectedDate = date.toDateString() === selectedDate.toDateString();
+            
+            return (
+              <div
+                key={index}
+                className={`
+                  flex items-center gap-4 p-4 border border-slate-600/50 rounded-lg bg-slate-700/30
+                  ${isTodayDate ? 'ring-2 ring-blue-500' : ''}
+                  ${isSelectedDate ? 'ring-2 ring-green-500' : ''}
+                `}
+              >
+                {/* Day info - fixed width section */}
+                <div className="flex-shrink-0 w-32">
+                  <div className={`text-sm font-semibold ${
+                    isTodayDate ? 'text-blue-400' : 
+                    isSelectedDate ? 'text-green-400' : 'text-white'
+                  }`}>
+                    {date.toLocaleDateString('en-US', { weekday: 'long' })}
+                  </div>
+                  <div className="text-xs text-[#94a3b8]">
+                    {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </div>
+                  {isTodayDate && (
+                    <div className="text-xs text-blue-400 font-medium">Today</div>
+                  )}
+                </div>
+                
+                {/* Workouts section - flexible width */}
+                <div className="flex-1">
+                  {dayWorkouts.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {dayWorkouts.map((workout) => (
+                        <div
+                          key={workout.id}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-105 ${getWorkoutTypeColor(workout.type)}`}
+                          onClick={() => setSelectedWorkout(workout)}
+                          title={`${workout.name} - ${workout.duration ? workout.duration + ' min' : ''}`}
+                        >
+                          <span className={`text-xs px-2 py-1 rounded ${getStatusColor(workout.status)}`}>
+                            {getStatusIcon(workout.status)}
+                          </span>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate" title={workout.name}>
+                              {workout.name}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs opacity-75">
+                              {workout.duration && (
+                                <span>{workout.duration}m</span>
+                              )}
+                              {workout.priority && workout.priority === 'high' && (
+                                <span className="text-red-400">🔥 High</span>
+                              )}
+                              {workout.difficultyLevel && (
+                                <span className="text-orange-400">💪 L{workout.difficultyLevel}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center text-[#94a3b8] text-sm">
+                      <span className="text-lg mr-2">📝</span>
+                      <span>No workouts scheduled</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Add workout button */}
+                <div className="flex-shrink-0">
+                  <button
+                    onClick={() => handleAddWorkout(date)}
+                    className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center text-lg font-bold transition-colors shadow-lg"
+                    title="Add workout"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Week/Day View - Show workouts list */}
       {(viewMode === 'week' || viewMode === 'day') && (
@@ -496,6 +660,16 @@ export default function WorkoutCalendar({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Workout Library Modal */}
+      {isWorkoutLibraryOpen && (
+        <WorkoutLibrary
+          isOpen={isWorkoutLibraryOpen}
+          onClose={() => setIsWorkoutLibraryOpen(false)}
+          onSelectWorkout={handleSelectWorkoutFromLibrary}
+          selectedDate={selectedDateForWorkout}
+        />
       )}
     </div>
   );

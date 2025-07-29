@@ -7,14 +7,23 @@ import {
   MonthlyPlan,
   WeeklyPlan
 } from '@/types/workout';
-import { WorkoutLibraryDetailResponse } from '@/models/types';
+import { WorkoutLibrary } from '@/models/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
 class WorkoutService {
   private cache = new Map<string, { data: unknown; timestamp: number }>();
+  private readonly CACHE_DURATION = 30 * 1000; // 30 seconds
   private cacheTimeout = 30000; // 30 seconds cache
   private pendingRequests = new Map<string, Promise<unknown>>();
+
+  // Helper function to format date to YYYY-MM-DD using local timezone (not UTC)
+  private formatLocalDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 
   private getCacheKey(endpoint: string, options?: RequestInit): string {
     const method = options?.method || 'GET';
@@ -207,13 +216,15 @@ class WorkoutService {
     return result;
   }
 
-  // Helper function to convert UTC timestamp to Bangkok timezone date
-  private convertToBangkokDate(utcTimestamp: string): string {
-    const utcDate = new Date(utcTimestamp);
-    // Convert to Bangkok timezone (GMT+7)
-    const bangkokDate = new Date(utcDate.getTime() + (7 * 60 * 60 * 1000));
-    // Return YYYY-MM-DD format
-    return bangkokDate.toISOString().split('T')[0];
+  // Helper function to handle date format (now expects YYYY-MM-DD string from VARCHAR column)
+  private convertToBangkokDate(dateString: string): string {
+    // Since scheduled_date is now VARCHAR storing YYYY-MM-DD format, use it directly
+    if (dateString.includes('T')) {
+      // Legacy: if it's still a timestamp, extract date part
+      return dateString.split('T')[0];
+    }
+    // New format: already in YYYY-MM-DD, use as-is
+    return dateString;
   }
 
   // Helper function to format assignments for calendar view
@@ -221,13 +232,13 @@ class WorkoutService {
     console.log('🦈 Formatting assignments for calendar:', assignments.length, 'assignments');
     
     const formatted = assignments.map(assignment => {
-      const bangkokDate = this.convertToBangkokDate(assignment.scheduled_date);
-      console.log('🦈 Assignment:', assignment.workout_name, 'UTC:', assignment.scheduled_date, '→ Bangkok:', bangkokDate);
+      const dateString = this.convertToBangkokDate(assignment.scheduled_date);
+      console.log('🦈 Assignment:', assignment.workout_name, 'UTC:', assignment.scheduled_date, '→ Date:', dateString);
       
       return {
         id: assignment.workout_library_id,
         assignment_id: assignment.id,
-        date: bangkokDate, // Use Bangkok timezone date
+        date: dateString, // Use consistent date format (same as coach endpoint)
         name: assignment.workout_name,
         type: assignment.workout_training_type,
         duration: Math.round(assignment.workout_duration * assignment.duration_adjustment),
@@ -245,8 +256,8 @@ class WorkoutService {
   // Get monthly workout plan
   async getMonthlyPlan(userId: number, year: number, month: number): Promise<MonthlyPlan> {
     // Calculate start and end dates for the month
-    const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
-    const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+    const startDate = this.formatLocalDate(new Date(year, month - 1, 1));
+    const endDate = this.formatLocalDate(new Date(year, month, 0));
     
     const { assignments } = await this.getAssignmentsByDateRange(userId, startDate, endDate);
     
@@ -262,8 +273,8 @@ class WorkoutService {
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
     
-    const startDate = weekStart.toISOString().split('T')[0];
-    const endDate = weekEnd.toISOString().split('T')[0];
+    const startDate = this.formatLocalDate(weekStart);
+    const endDate = this.formatLocalDate(weekEnd);
     
     const { assignments } = await this.getAssignmentsByDateRange(userId, startDate, endDate);
     
@@ -280,12 +291,13 @@ class WorkoutService {
     return this.formatAssignmentsForCalendar(assignments);
   }
 
-  // Helper function to get week dates
+  // Helper function to get week dates (Monday to Sunday)
   getWeekDates(date: Date): { start: Date; end: Date; dates: Date[] } {
     const start = new Date(date);
     const day = start.getDay();
-    const diff = start.getDate() - day; // Adjust to start from Sunday
-    start.setDate(diff);
+    // Adjust to start from Monday: if Sunday (0), go back 6 days; otherwise go back (day - 1) days
+    const diff = day === 0 ? -6 : -(day - 1);
+    start.setDate(start.getDate() + diff);
     
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
@@ -301,8 +313,8 @@ class WorkoutService {
   }
 
   // Get detailed workout information with segments
-  async getWorkoutDetails(workoutId: number): Promise<WorkoutLibraryDetailResponse> {
-    const response = await this.fetchApi<{ success: boolean; workout: WorkoutLibraryDetailResponse; message: string }>(`/workout-library/templates/${workoutId}`);
+  async getWorkoutDetails(workoutId: number): Promise<WorkoutLibrary> {
+    const response = await this.fetchApi<{ success: boolean; workout: WorkoutLibrary; message: string }>(`/workout-library/templates/${workoutId}`);
     return response.workout;
   }
 

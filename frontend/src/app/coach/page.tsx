@@ -11,6 +11,25 @@ import WorkoutCalendar from './components/WorkoutCalendar';
 import AthleteProfile from './components/AthleteProfile';
 import CoachStats from './components/CoachStats';
 import WorkoutLibrary from './components/WorkoutLibrary';
+import workoutService from '@/services/workoutService';
+
+// Type for workout from the library (matching WorkoutLibrary component interface)
+interface WorkoutFromLibrary {
+  id: number;
+  name: string;
+  description?: string;
+  training_type: string;
+  primary_control_parameter: string;
+  secondary_control_parameter?: string;
+  estimated_duration_minutes: number;
+  difficulty_level?: number;
+  tags?: string[];
+  created_by?: number;
+  is_public: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 // Types for athlete and workout data
 interface Athlete {
@@ -60,6 +79,65 @@ export default function CoachPage() {
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
   const [isWorkoutLibraryOpen, setIsWorkoutLibraryOpen] = useState(false);
 
+  // Handle adding workout from library to calendar
+  const handleAddWorkout = async (workout: WorkoutFromLibrary, date: Date) => {
+    if (!selectedAthlete || !user) {
+      console.error('Missing selected athlete or current user');
+      return;
+    }
+    
+    try {
+      // Format date to YYYY-MM-DD using local timezone (not UTC)
+      const formatLocalDate = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      const scheduledDate = formatLocalDate(date);
+      
+      // Create assignment request
+      const assignmentRequest = {
+        workout_library_id: workout.id,
+        assigned_to_user_id: selectedAthlete.id,
+        assigned_by_user_id: user.id,
+        scheduled_date: scheduledDate,
+      };
+
+      console.log('Creating workout assignment:', assignmentRequest);
+      console.log('Selected date:', date);
+      console.log('Formatted scheduled_date:', scheduledDate);
+      
+      // Save to database via API
+      const response = await workoutService.createAssignment(assignmentRequest);
+      
+      console.log('✅ Workout assignment created:', response);
+      
+      // Create local workout session for immediate UI feedback
+      const newWorkout: WorkoutSession = {
+        id: response.assignment_id,
+        date: scheduledDate,
+        name: workout.name,
+        type: 'endurance', // Default type, should be mapped from workout.training_type
+        status: 'planned',
+        duration: workout.estimated_duration_minutes,
+        notes: workout.description || '',
+        coachNotes: `Added from library: ${workout.name}`
+      };
+
+      // Add to local state for immediate UI feedback
+      setWorkouts(prevWorkouts => [...prevWorkouts, newWorkout]);
+      
+      // Show success message (you can add a toast notification here)
+      console.log('🦈 Workout assigned successfully!');
+      
+    } catch (error) {
+      console.error('❌ Error adding workout to calendar:', error);
+      // You can add error toast notification here
+    }
+  };
+
   // Check authentication and coach permissions
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
@@ -79,6 +157,13 @@ export default function CoachPage() {
         if (result.success) {
           console.log('✅ Loaded athletes from database:', result.data);
           setAthletes(result.data);
+          
+          // Auto-select athlete ID 33 for testing (where we created the test workout)
+          if (result.data.length > 0 && !selectedAthlete) {
+            const testAthlete = result.data.find((athlete: Athlete) => athlete.id === 33) || result.data[0];
+            console.log('🦈 Auto-selecting athlete for testing:', testAthlete, '(looking for ID 33)');
+            setSelectedAthlete(testAthlete);
+          }
         } else {
           console.error('❌ Failed to load athletes:', result.message);
           setAthletes([]); // No fallback to mock data
@@ -92,18 +177,24 @@ export default function CoachPage() {
     };
 
     loadAthletes();
-  }, []);
+  }, []); // Remove selectedAthlete dependency to prevent infinite loop
 
   // Load workouts for selected athlete
   useEffect(() => {
     const loadWorkouts = async (athleteId: number) => {
       try {
+        console.log('🔍 Loading workouts for athlete ID:', athleteId);
         setIsLoadingWorkouts(true);
         const response = await fetch(`/api/coach/athletes/${athleteId}/workouts`);
         const result = await response.json();
         
         if (result.success) {
           console.log('✅ Loaded workouts from database:', result.data);
+          console.log('🔍 Number of workouts loaded:', result.data.length);
+          // Add detailed logging for each workout date
+          result.data.forEach((workout: WorkoutSession, index: number) => {
+            console.log(`🗓️ Coach page workout ${index + 1}: "${workout.name}" on ${workout.date} (${typeof workout.date})`);
+          });
           setWorkouts(result.data);
         } else {
           console.error('❌ Failed to load workouts:', result.message);
@@ -118,6 +209,7 @@ export default function CoachPage() {
     };
 
     if (selectedAthlete) {
+      console.log('🦈 Selected athlete:', selectedAthlete);
       loadWorkouts(selectedAthlete.id);
     } else {
       setWorkouts([]);
@@ -196,6 +288,7 @@ export default function CoachPage() {
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
                 isLoading={isLoadingWorkouts}
+                onAddWorkout={handleAddWorkout}
               />
             </div>
           </div>

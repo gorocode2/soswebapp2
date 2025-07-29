@@ -55,9 +55,10 @@ interface WorkoutLibraryProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectWorkout?: (workout: WorkoutLibrary) => void;
+  selectedDate?: Date | null;
 }
 
-export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout }: WorkoutLibraryProps) {
+export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selectedDate }: WorkoutLibraryProps) {
   const [workouts, setWorkouts] = useState<WorkoutLibrary[]>([]);
   const [categories, setCategories] = useState<WorkoutCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -515,6 +516,25 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout }: Wor
                           )}
                         </div>
                       </div>
+
+                      {/* Add to Calendar Button (when date is selected) */}
+                      {selectedDate && onSelectWorkout && (
+                        <div className="mt-4 pt-3 border-t border-slate-600">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectWorkout(workout);
+                            }}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                          >
+                            📅 Add to Calendar ({selectedDate.toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric',
+                              weekday: 'short'
+                            })})
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

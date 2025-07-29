@@ -34,7 +34,7 @@ function WorkoutMonthlySchedule({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const daysOfWeek = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const month = currentDate.toLocaleString('default', { month: 'long' });
   const year = currentDate.getFullYear();
   const today = new Date().getDate();
@@ -42,9 +42,11 @@ function WorkoutMonthlySchedule({
     currentDate.getMonth() === new Date().getMonth() && 
     currentDate.getFullYear() === new Date().getFullYear();
 
-  // Calculate the day of the week for the first day of the month
+  // Calculate the day of the week for the first day of the month (Monday = 0)
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-  const startingDayOfWeek = firstDayOfMonth.getDay(); // 0 for Sunday, 1 for Monday, etc.
+  const originalDay = firstDayOfMonth.getDay(); // 0 for Sunday, 1 for Monday, etc.
+  // Convert to Monday = 0, Tuesday = 1, ..., Sunday = 6
+  const startingDayOfWeek = originalDay === 0 ? 6 : originalDay - 1;
 
   // Get the number of days in the current month
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();

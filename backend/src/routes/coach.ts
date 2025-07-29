@@ -126,33 +126,59 @@ router.get('/athletes/:athleteId/workouts', async (req, res) => {
       ORDER BY wa.scheduled_date DESC
     `, [athleteId]);
     
+    console.log(`🔍 Backend - Found ${result.rows.length} workout assignments for athlete ${athleteId}`);
+    
     // Map to frontend format
-    const workouts = result.rows.map(row => ({
-      id: row.id,
-      date: row.scheduled_date,
-      name: row.workout_name,
-      type: row.training_type || 'endurance',
-      status: row.status,
-      duration: Math.round(row.estimated_duration_minutes * (row.duration_adjustment || 1)),
-      targetPower: null, // TODO: Calculate from workout segments and user FTP
-      actualPower: null, // TODO: Get from execution results
-      targetHeartRate: null, // TODO: Calculate from workout segments and user zones
-      actualHeartRate: null, // TODO: Get from execution results
-      notes: row.athlete_feedback,
-      coachNotes: row.custom_notes || row.coach_review,
-      priority: row.priority,
-      intensityAdjustment: row.intensity_adjustment,
-      durationAdjustment: row.duration_adjustment,
-      completedAt: row.completed_at,
-      description: row.workout_description,
-      difficultyLevel: row.difficulty_level,
-      controlParameter: row.primary_control_parameter,
-      coachInfo: {
-        username: row.coach_username,
-        firstName: row.coach_first_name,
-        lastName: row.coach_last_name
+    const workouts = result.rows.map(row => {
+      console.log('🔍 Backend - Processing workout row:', {
+        id: row.id,
+        scheduled_date: row.scheduled_date,
+        scheduled_date_type: typeof row.scheduled_date,
+        workout_name: row.workout_name
+      });
+      
+      // Since scheduled_date is now VARCHAR, use it directly without any conversion
+      let dateString: string;
+      if (typeof row.scheduled_date === 'string') {
+        // Use the raw string date directly - no timezone conversion needed
+        dateString = row.scheduled_date.split('T')[0]; // Remove time part if present
+      } else if (row.scheduled_date instanceof Date) {
+        // Legacy fallback in case some old data still comes as Date
+        dateString = row.scheduled_date.toISOString().split('T')[0];
+      } else {
+        console.error('❌ Unexpected date format:', row.scheduled_date);
+        dateString = '2025-07-29'; // Fallback
       }
-    }));
+      
+      console.log('🔍 Backend - Using raw date string:', dateString);
+      
+      return {
+        id: row.id,
+        date: dateString,
+        name: row.workout_name,
+        type: row.training_type || 'endurance',
+        status: row.status,
+        duration: Math.round(row.estimated_duration_minutes * (row.duration_adjustment || 1)),
+        targetPower: null, // TODO: Calculate from workout segments and user FTP
+        actualPower: null, // TODO: Get from execution results
+        targetHeartRate: null, // TODO: Calculate from workout segments and user zones
+        actualHeartRate: null, // TODO: Get from execution results
+        notes: row.athlete_feedback,
+        coachNotes: row.custom_notes || row.coach_review,
+        priority: row.priority,
+        intensityAdjustment: row.intensity_adjustment,
+        durationAdjustment: row.duration_adjustment,
+        completedAt: row.completed_at,
+        description: row.workout_description,
+        difficultyLevel: row.difficulty_level,
+        controlParameter: row.primary_control_parameter,
+        coachInfo: {
+          username: row.coach_username,
+          firstName: row.coach_first_name,
+          lastName: row.coach_last_name
+        }
+      };
+    });
     
     client.release();
     res.json({

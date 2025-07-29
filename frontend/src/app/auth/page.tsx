@@ -231,6 +231,7 @@ function AuthPageContent() {
               </button>
             </form>
           )}
+          
           <div className="mt-6 text-center">
             <Link href="/" className="text-slate-400 hover:text-blue-400 transition-colors text-sm">
               ← Back to Home
