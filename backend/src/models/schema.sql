@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     weight DECIMAL(5,2), -- in kg
     height DECIMAL(5,2), -- in cm
     date_of_birth DATE,
+    intervals_icu_id VARCHAR(100) UNIQUE, -- intervals.icu account ID for 3rd party integration
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

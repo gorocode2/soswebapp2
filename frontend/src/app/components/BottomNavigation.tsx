@@ -13,6 +13,7 @@ interface BottomNavItem {
 const navItems: BottomNavItem[] = [
   { href: '/dashboard', icon: '📊', translationKey: 'nav.dashboard' },
   { href: '/workout', icon: '💪', translationKey: 'nav.workout' },
+  { href: '/coach', icon: '🦈', translationKey: 'nav.coach' },
   { href: '/videos', icon: '🎥', translationKey: 'nav.videos' },
   { href: '/profile', icon: '👤', translationKey: 'nav.profile' },
 ];

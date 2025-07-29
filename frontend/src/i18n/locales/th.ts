@@ -3,6 +3,7 @@ export const th = {
   nav: {
     dashboard: 'แดชบอร์ด',
     workout: 'ออกกำลังกาย',
+    coach: 'โค้ช',
     profile: 'โปรไฟล์',
     videos: 'วิดีโอ',
     logout: 'ออกจากระบบ',
@@ -59,21 +60,78 @@ export const th = {
     passwordMismatch: 'รหัสผ่านไม่ตรงกัน'
   },
 
-  // Dashboard
-  dashboard: {
-    title: 'แดชบอร์ด',
-    welcome: 'ยินดีต้อนรับกลับมา ฉลาม!',
-    todaysWorkout: 'การออกกำลังกายวันนี้',
-    weeklyProgress: 'ความคืบหน้าประจำสัปดาห์',
-    upcomingSessions: 'เซสชั่นที่กำลังจะมาถึง',
-    recentActivity: 'กิจกรรมล่าสุด',
-    stats: {
-      totalWorkouts: 'การออกกำลังกายทั้งหมด',
-      weeklyHours: 'ชั่วโมงต่อสัปดาห์',
-      avgPower: 'พลังงานเฉลี่ย',
-      fitness: 'คะแนนความฟิต'
-    }
+// Dashboard
+dashboard: {
+  title: 'แดชบอร์ด',
+  welcome: 'ยินดีต้อนรับกลับมา ฉลาม!',
+  todaysWorkout: 'การออกกำลังกายวันนี้',
+  weeklyProgress: 'ความคืบหน้าประจำสัปดาห์',
+  upcomingSessions: 'เซสชั่นที่กำลังจะมาถึง',
+  recentActivity: 'กิจกรรมล่าสุด',
+  weeklyStats: 'สถิติประจำสัปดาห์',
+  
+  // Enhanced stats section with all dashboard metrics
+  stats: {
+    // Core workout metrics
+    totalWorkouts: 'การออกกำลังกายทั้งหมด',
+    weeklyHours: 'ชั่วโมงต่อสัปดาห์',
+    avgPower: 'พลังงานเฉลี่ย',
+    fitness: 'คะแนนความฟิต',
+    
+    // Dashboard specific stats
+    totalRideTime: 'เวลาปั่นรวม',
+    workoutsCompleted: 'คอร์สที่ทำแล้ว',
+    ftp: 'FTP',
+    upcomingWorkouts: 'คอร์สที่กำลังจะมาถึง',
+    
+    // Additional performance metrics
+    weeklyDistance: 'ระยะทางประจำสัปดาห์',
+    averageSpeed: 'ความเร็วเฉลี่ย',
+    totalElevation: 'ความสูงรวม',
+    trainingLoad: 'โหลดการฝึก',
+    recoveryScore: 'คะแนนการฟื้นตัว',
+    weeklyTSS: 'TSS ประจำสัปดาห์',
+    
+    // Progress indicators
+    improvement: 'การปรับปรุง',
+    decline: 'การลดลง',
+    stable: 'คงที่',
+    target: 'เป้าหมาย',
+    achieved: 'บรรลุ',
+    
+    // Training zones
+    zone1: 'โซน 1 - การฟื้นตัว',
+    zone2: 'โซน 2 - ความอดทน',
+    zone3: 'โซน 3 - เทมโป',
+    zone4: 'โซน 4 - เกณฑ์',
+    zone5: 'โซน 5 - VO2 สูงสุด',
+    zone6: 'โซน 6 - ประสาทกล้ามเนื้อ',
+    
+    // Weekly summary
+    thisWeek: 'สัปดาห์นี้',
+    lastWeek: 'สัปดาห์ที่แล้ว',
+    weeklyGoal: 'เป้าหมายสัปดาห์',
+    weeklyCompletion: 'ความสมบูรณ์ประจำสัปดาห์'
   },
+  
+  // Dashboard cards and sections
+  cards: {
+    performance: 'ประสิทธิภาพ',
+    training: 'การฝึก',
+    recovery: 'การฟื้นตัว',
+    goals: 'เป้าหมาย',
+    analysis: 'การวิเคราะห์'
+  },
+  
+  // Quick actions
+  actions: {
+    startWorkout: 'เริ่มการออกกำลังกาย',
+    viewProgress: 'ดูความคืบหน้า',
+    updateGoals: 'อัปเดตเป้าหมาย',
+    viewCalendar: 'ดูปฏิทิน',
+    syncDevices: 'ซิงค์อุปกรณ์'
+  }
+},
 
   // Workout
   workout: {
@@ -263,5 +321,71 @@ export const th = {
     thisWeek: 'สัปดาห์นี้',
     lastWeek: 'สัปดาห์ที่แล้ว',
     nextWeek: 'สัปดาห์หน้า'
+  },
+
+  // Coach Dashboard
+  coach: {
+    title: 'แดชบอร์ดโค้ช',
+    subtitle: 'จัดการนักกีฬาและติดตามความก้าวหน้าในการฝึกซ้อม',
+    selectAthlete: 'เลือกนักกีฬา',
+    noAthleteSelected: 'โปรดเลือกนักกีฬาเพื่อดูปฏิทินการฝึกซ้อม',
+    athleteSearch: 'ค้นหานักกีฬา...',
+    viewCalendar: 'ดูปฏิทินการฝึกซ้อม',
+    athleteStats: 'สถิตินักกีฬา',
+    totalAthletes: 'นักกีฬาทั้งหมด',
+    activeWorkouts: 'การออกกำลังกายที่กำลังดำเนินการ',
+    completedThisWeek: 'เสร็จสิ้นในสัปดาห์นี้',
+    
+    // Calendar View
+    calendar: {
+      title: 'ปฏิทินการฝึกซ้อม',
+      monthView: 'มุมมองรายเดือน',
+      weekView: 'มุมมองรายสัปดาห์',
+      dayView: 'มุมมองรายวัน',
+      plannedWorkouts: 'การออกกำลังกายที่วางแผนไว้',
+      completedWorkouts: 'การออกกำลังกายที่เสร็จสิ้น',
+      noWorkouts: 'ไม่มีการออกกำลังกายที่กำหนดไว้ในช่วงนี้',
+      workoutDetails: 'รายละเอียดการออกกำลังกาย',
+      assignWorkout: 'มอบหมายการออกกำลังกาย',
+      editWorkout: 'แก้ไขการออกกำลังกาย',
+      removeWorkout: 'ลบการออกกำลังกาย'
+    },
+
+    // Workout Status
+    workoutStatus: {
+      planned: 'วางแผนไว้',
+      started: 'เริ่มแล้ว',
+      in_progress: 'กำลังดำเนินการ',
+      completed: 'เสร็จสิ้น',
+      missed: 'พลาด',
+      skipped: 'ข้าม'
+    },
+
+    // Athlete Profile
+    athlete: {
+      profile: 'โปรไฟล์นักกีฬา',
+      personalInfo: 'ข้อมูลส่วนตัว',
+      trainingZones: 'โซนการฝึกซ้อม',
+      recentActivity: 'กิจกรรมล่าสุด',
+      performance: 'ตัวชี้วัดประสิทธิภาพ',
+      ftp: 'FTP (วัตต์)',
+      maxHeartRate: 'อัตราการเต้นหัวใจสูงสุด',
+      restHeartRate: 'อัตราการเต้นหัวใจขณะพัก',
+      weight: 'น้ำหนัก (กก.)',
+      height: 'ส่วนสูง (ซม.)',
+      experience: 'ระดับประสบการณ์',
+      joinedDate: 'วันที่เข้าร่วม',
+      lastActivity: 'กิจกรรมล่าสุด'
+    },
+
+    // Actions
+    actions: {
+      assignWorkout: 'มอบหมายการออกกำลังกายใหม่',
+      viewProgress: 'ดูความก้าวหน้า',
+      sendMessage: 'ส่งข้อความ',
+      scheduleSession: 'กำหนดตารางเซสชัน',
+      exportData: 'ส่งออกข้อมูล',
+      generateReport: 'สร้างรายงาน'
+    }
   }
 };

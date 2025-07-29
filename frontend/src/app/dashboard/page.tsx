@@ -6,10 +6,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import BottomNavigation from '../components/BottomNavigation';
 import Header from '../components/Header';
 import { ClockIcon, TrophyIcon } from '../components/icons';
+import { useLanguage } from '../../i18n';
 
 export default function DashboardPage() {
   const { user, isLoading, isLoggedIn, logout } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
@@ -36,31 +38,55 @@ export default function DashboardPage() {
       <main className="flex-grow">
         <Header user={user} onLogout={logout} />
 
-        {/* Weekly Stats */}
-        <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Weekly Stats</h2>
-        <div className="flex flex-wrap gap-4 p-4">
-          {/* These are placeholders. You would map over your data here. */}
-          <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#314d68]">
-            <p className="text-white text-base font-medium leading-normal">Total Ride Time</p>
-            <p className="text-white tracking-light text-2xl font-bold leading-tight">5h 30m</p>
-            <p className="text-[#0bda5b] text-base font-medium leading-normal">+10%</p>
-          </div>
-          <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#314d68]">
-            <p className="text-white text-base font-medium leading-normal">Workouts Completed</p>
-            <p className="text-white tracking-light text-2xl font-bold leading-tight">5 (80%)</p>
-            <p className="text-[#0bda5b] text-base font-medium leading-normal">+5%</p>
-          </div>
-          <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#314d68]">
-            <p className="text-white text-base font-medium leading-normal">FTP</p>
-            <p className="text-white tracking-light text-2xl font-bold leading-tight">180w</p>
-            <p className="text-[#0bda5b] text-base font-medium leading-normal">+15%</p>
-          </div>
-          <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#314d68]">
-            <p className="text-white text-base font-medium leading-normal">Upcoming Workouts</p>
-            <p className="text-white tracking-light text-2xl font-bold leading-tight">2</p>
-            <p className="text-[#0bda5b] text-base font-medium leading-normal">+20%</p>
-          </div>
-        </div>
+    {/* Weekly Stats */}
+    <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
+      {t('dashboard.weeklyStats')}
+    </h2>
+    <div className="flex flex-wrap gap-4 p-4">
+      {/* Total Ride Time Card */}
+      <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#314d68] bg-slate-800/50 hover:bg-slate-700/50 transition-all duration-300">
+        <p className="text-white text-base font-medium leading-normal">
+          {t('dashboard.stats.totalRideTime')}
+        </p>
+        <p className="text-cyan-400 tracking-light text-2xl font-bold leading-tight">
+          5{t('time.hours')} 30{t('time.minutes')}
+        </p>
+        <p className="text-[#0bda5b] text-base font-medium leading-normal">+10%</p>
+      </div>
+
+      {/* Workouts Completed Card */}
+      <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#314d68] bg-slate-800/50 hover:bg-slate-700/50 transition-all duration-300">
+        <p className="text-white text-base font-medium leading-normal">
+          {t('dashboard.stats.workoutsCompleted')}
+        </p>
+        <p className="text-cyan-400 tracking-light text-2xl font-bold leading-tight">
+          5 (80%)
+        </p>
+        <p className="text-[#0bda5b] text-base font-medium leading-normal">+5%</p>
+      </div>
+
+      {/* FTP Card */}
+      <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#314d68] bg-slate-800/50 hover:bg-slate-700/50 transition-all duration-300">
+        <p className="text-white text-base font-medium leading-normal">
+          {t('dashboard.stats.ftp')}
+        </p>
+        <p className="text-cyan-400 tracking-light text-2xl font-bold leading-tight">
+          180w
+        </p>
+        <p className="text-[#0bda5b] text-base font-medium leading-normal">+15%</p>
+      </div>
+
+      {/* Upcoming Workouts Card */}
+      <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#314d68] bg-slate-800/50 hover:bg-slate-700/50 transition-all duration-300">
+        <p className="text-white text-base font-medium leading-normal">
+          {t('dashboard.stats.upcomingWorkouts')}
+        </p>
+        <p className="text-cyan-400 tracking-light text-2xl font-bold leading-tight">
+          2
+        </p>
+        <p className="text-[#0bda5b] text-base font-medium leading-normal">+20%</p>
+      </div>
+    </div>
 
         {/* Heart Rate Zones */}
         <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">

@@ -11,6 +11,7 @@ export interface User {
   height?: number;
   avatarUrl?: string;
   createdAt: string;
+  intervalsIcuId?: string; // intervals.icu account ID for 3rd party integration
 }
 
 // For user registration

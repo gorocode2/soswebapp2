@@ -78,6 +78,16 @@ cd /Users/kamhangenilkamhange/Desktop/coding/2025/soswebapp2/backend
 
 **Note**: Never run `npm run dev` from the root `/soswebapp2` directory - always navigate to the specific service directory first.
 
+## Testing & Browser Access
+**IMPORTANT**: This web application requires authentication before accessing any pages.
+
+### Test Login Credentials
+When using the Simple Browser to test the application, use these credentials:
+- **Email**: `testing@only.com`
+- **Password**: `test1234`
+
+**Usage**: When opening any page in the Simple Browser (e.g., `http://localhost:3000/coach`), you will be redirected to the login page first. Use the above credentials to authenticate and access the application features.
+
 ## Code Style
 - Use functional components with hooks (frontend)
 - Prefer arrow functions for components and functions

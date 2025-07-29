@@ -48,6 +48,7 @@ export interface User {
   deleted_at?: Date; // Soft delete
   avatar_url?: string;
   bio?: string;
+  intervals_icu_id?: string; // intervals.icu account ID for 3rd party integration
   social_links: Record<string, string>;
   coaching_preferences: {
     intensity: 'low' | 'moderate' | 'high' | 'extreme';

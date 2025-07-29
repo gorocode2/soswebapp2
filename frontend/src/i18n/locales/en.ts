@@ -3,6 +3,7 @@ export const en = {
   nav: {
     dashboard: 'Dashboard',
     workout: 'Workout',
+    coach: 'Coach',
     profile: 'Profile',
     videos: 'Videos',
     logout: 'Logout',
@@ -67,11 +68,13 @@ export const en = {
     weeklyProgress: 'Weekly Progress',
     upcomingSessions: 'Upcoming Sessions',
     recentActivity: 'Recent Activity',
+    weeklyStats: 'Weekly Stats',
     stats: {
       totalWorkouts: 'Total Workouts',
       weeklyHours: 'Weekly Hours',
       avgPower: 'Average Power',
-      fitness: 'Fitness Score'
+      fitness: 'Fitness Score',
+      totalRideTime: 'Total Ride Time'
     }
   },
 
@@ -263,6 +266,72 @@ export const en = {
     thisWeek: 'This Week',
     lastWeek: 'Last Week',
     nextWeek: 'Next Week'
+  },
+
+  // Coach Dashboard
+  coach: {
+    title: 'Coach Dashboard',
+    subtitle: 'Manage your athletes and monitor their training progress',
+    selectAthlete: 'Select an Athlete',
+    noAthleteSelected: 'Please select an athlete to view their training calendar',
+    athleteSearch: 'Search athletes...',
+    viewCalendar: 'View Training Calendar',
+    athleteStats: 'Athlete Statistics',
+    totalAthletes: 'Total Athletes',
+    activeWorkouts: 'Active Workouts',
+    completedThisWeek: 'Completed This Week',
+    
+    // Calendar View
+    calendar: {
+      title: 'Training Calendar',
+      monthView: 'Month View',
+      weekView: 'Week View',
+      dayView: 'Day View',
+      plannedWorkouts: 'Planned Workouts',
+      completedWorkouts: 'Completed Workouts',
+      noWorkouts: 'No workouts scheduled for this period',
+      workoutDetails: 'Workout Details',
+      assignWorkout: 'Assign Workout',
+      editWorkout: 'Edit Workout',
+      removeWorkout: 'Remove Workout'
+    },
+
+    // Workout Status
+    workoutStatus: {
+      planned: 'Planned',
+      started: 'Started',
+      in_progress: 'In Progress',
+      completed: 'Completed',
+      missed: 'Missed',
+      skipped: 'Skipped'
+    },
+
+    // Athlete Profile
+    athlete: {
+      profile: 'Athlete Profile',
+      personalInfo: 'Personal Information',
+      trainingZones: 'Training Zones',
+      recentActivity: 'Recent Activity',
+      performance: 'Performance Metrics',
+      ftp: 'FTP (Watts)',
+      maxHeartRate: 'Max Heart Rate',
+      restHeartRate: 'Rest Heart Rate',
+      weight: 'Weight (kg)',
+      height: 'Height (cm)',
+      experience: 'Experience Level',
+      joinedDate: 'Joined Date',
+      lastActivity: 'Last Activity'
+    },
+
+    // Actions
+    actions: {
+      assignWorkout: 'Assign New Workout',
+      viewProgress: 'View Progress',
+      sendMessage: 'Send Message',
+      scheduleSession: 'Schedule Session',
+      exportData: 'Export Data',
+      generateReport: 'Generate Report'
+    }
   }
 };
 

@@ -3,6 +3,7 @@ import authRoutes from './auth';
 import cyclingRoutes from './cycling';
 import userRoutes from './users';
 import trainingRoutes from './training';
+import coachRoutes from './coach';
 
 const router = Router();
 
@@ -17,6 +18,7 @@ router.get('/', (req, res) => {
       '/api/users - User management',
       '/api/cycling - Cycling data and analytics',
       '/api/training - AI training programs',
+      '/api/coach - Coach dashboard and athlete management',
     ],
   });
 });
@@ -26,5 +28,6 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/cycling', cyclingRoutes);
 router.use('/training', trainingRoutes);
+router.use('/coach', coachRoutes);
 
 export default router;
