@@ -71,9 +71,6 @@ export default function AthleteProfile({ athlete }: AthleteProfileProps) {
 
   return (
     <div className="bg-slate-800/50 rounded-xl border border-[#314d68] p-6">
-      <h3 className="text-white text-lg font-semibold mb-6">
-        {t('coach.athlete.profile')}
-      </h3>
 
       {/* Athlete Header */}
       <div className="flex items-center space-x-4 mb-6">
@@ -125,8 +122,7 @@ export default function AthleteProfile({ athlete }: AthleteProfileProps) {
           )}
         </div>
       </div>
-
-      {/* Performance Metrics */}
+    {/*
       <div className="mb-6">
         <h5 className="text-white text-sm font-semibold mb-3 uppercase tracking-wide">
           {t('coach.athlete.performance')}
@@ -153,7 +149,7 @@ export default function AthleteProfile({ athlete }: AthleteProfileProps) {
         </div>
       </div>
 
-      {/* Action Buttons */}
+      
       <div className="space-y-2">
         <button className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
           {t('coach.actions.assignWorkout')}
@@ -165,6 +161,7 @@ export default function AthleteProfile({ athlete }: AthleteProfileProps) {
           {t('coach.actions.sendMessage')}
         </button>
       </div>
+      */}
     </div>
   );
 }

@@ -188,25 +188,6 @@ export default function WorkoutCalendar({
         </div>
       </div>
 
-      {/* Debug Panel - Show workout data */}
-      {workouts.length > 0 && (
-        <div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-600">
-          <div className="text-xs text-yellow-400 mb-2">Debug: Found {workouts.length} workouts</div>
-          <div className="text-xs text-[#94a3b8] space-y-1">
-            {workouts.map(workout => (
-              <div key={workout.id} className="flex gap-2">
-                <span className="text-blue-400">#{workout.id}</span>
-                <span className="text-white">{workout.name}</span>
-                <span className="text-cyan-400">{workout.date}</span>
-                <span className={`px-1 rounded ${getStatusColor(workout.status)}`}>
-                  {workout.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Calendar Navigation */}
       <div className="flex items-center justify-between mb-6">
         <button
