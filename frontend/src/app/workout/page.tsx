@@ -105,7 +105,7 @@ export default function WorkoutPage() {
     <div className="relative flex size-full min-h-screen flex-col bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <Header user={user} onLogout={logout} />
       
-      <main className="layout-content-container flex flex-col flex-1 p-4">
+      <main className="layout-content-container flex flex-col flex-1 p-4 pb-20">
         {/* View Toggle */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">

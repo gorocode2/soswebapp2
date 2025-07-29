@@ -144,7 +144,7 @@ export default function CoachPage() {
       <Header user={user} onLogout={logout} />
 
       {/* Main Content */}
-      <main className="flex-grow px-4 py-6">
+      <main className="flex-grow px-4 py-6 pb-20">
         {/* Page Title */}
         <div className="mb-6">
           <h1 className="text-white text-[32px] font-bold leading-tight tracking-[-0.015em] mb-2">

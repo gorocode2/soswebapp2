@@ -79,7 +79,7 @@ export default function ProfilePage() {
   return (
     <div className="relative flex size-full min-h-screen flex-col bg-[#101a23] group/design-root overflow-x-hidden">
       <Header user={user} onLogout={logout} />
-      <main className="flex-grow pb-24">
+      <main className="flex-grow pb-20">
         <div className="flex items-center bg-[#101a23] p-4 pb-2 justify-between">
           <button className="text-white flex size-12 shrink-0 items-center">
             <ArrowLeftIcon />

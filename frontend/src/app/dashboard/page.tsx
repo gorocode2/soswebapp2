@@ -35,7 +35,7 @@ export default function DashboardPage() {
   return (
     <div className="relative flex size-full min-h-screen flex-col bg-[#101a23] dark justify-between group/design-root overflow-x-hidden">
       {/* Main Content */}
-      <main className="flex-grow">
+      <main className="flex-grow pb-20">
         <Header user={user} onLogout={logout} />
 
     {/* Weekly Stats */}
