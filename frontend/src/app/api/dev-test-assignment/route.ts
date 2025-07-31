@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Development-only route for testing workout assignments
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // Only allow in development environment
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json({ success: false, message: 'Not available in production' }, { status: 403 });
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     };
 
     console.log('🦈 DEV: Creating test workout assignment:', testAssignment);
-    console.log('🦈 DEV: Available users:', users.map((u: any) => ({ id: u.id, username: u.username })));
+    console.log('🦈 DEV: Available users:', users.map((u: { id: number; username: string }) => ({ id: u.id, username: u.username })));
 
     // Call the backend to create assignment
     const response = await fetch(`${backendUrl}/workout-library/assignments`, {
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         error: result.error || result.message,
         debug: {
           assignment_data: testAssignment,
-          available_users: users.map((u: any) => ({ id: u.id, username: u.username }))
+          available_users: users.map((u: { id: number; username: string }) => ({ id: u.id, username: u.username }))
         }
       });
     }

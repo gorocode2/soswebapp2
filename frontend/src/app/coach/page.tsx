@@ -159,7 +159,7 @@ export default function CoachPage() {
           setAthletes(result.data);
           
           // Auto-select athlete ID 33 for testing (where we created the test workout)
-          if (result.data.length > 0 && !selectedAthlete) {
+          if (result.data.length > 0) {
             const testAthlete = result.data.find((athlete: Athlete) => athlete.id === 33) || result.data[0];
             console.log('🦈 Auto-selecting athlete for testing:', testAthlete, '(looking for ID 33)');
             setSelectedAthlete(testAthlete);

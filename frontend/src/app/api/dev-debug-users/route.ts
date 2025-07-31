@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Development-only route for checking database users
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // Only allow in development environment
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json({ success: false, message: 'Not available in production' }, { status: 403 });
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         message: 'Available users in database:',
         data: {
           total_users: users.length,
-          users: users.map((user: any) => ({
+          users: users.map((user: { id: number; username: string; email: string; firstName?: string; lastName?: string }) => ({
             id: user.id,
             username: user.username,
             email: user.email,

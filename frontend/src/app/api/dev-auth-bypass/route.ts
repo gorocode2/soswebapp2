@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // Development-only route for bypassing authentication
 // This should NEVER be deployed to production
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // Only allow in development environment
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json({ success: false, message: 'Not available in production' }, { status: 403 });

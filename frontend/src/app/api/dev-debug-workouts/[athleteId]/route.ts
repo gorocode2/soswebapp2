@@ -24,7 +24,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           total_workouts: result.data.length,
           workouts: result.data,
           today_date: '2025-07-29',
-          workouts_for_today: result.data.filter((w: any) => w.date === '2025-07-29')
+          workouts_for_today: result.data.filter((w: { date: string }) => w.date === '2025-07-29')
         }
       });
     } else {

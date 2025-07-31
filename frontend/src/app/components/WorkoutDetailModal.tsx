@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CalendarWorkout } from '@/types/workout';
-import { WorkoutLibraryDetailResponse, WorkoutSegment } from '@/models/types';
+import { WorkoutLibraryDetailResponse, WorkoutSegment, WorkoutLibrary } from '@/models/types';
 import workoutService from '@/services/workoutService';
 import WorkoutStructureGraph from './WorkoutStructureGraph';
 import { useTranslation } from '@/i18n';
@@ -54,7 +54,7 @@ export default function WorkoutDetailModal({
   onCompleteWorkout
 }: WorkoutDetailModalProps) {
   const { t } = useTranslation();
-  const [workoutDetails, setWorkoutDetails] = useState<WorkoutLibraryDetailResponse | null>(null);
+  const [workoutDetails, setWorkoutDetails] = useState<WorkoutLibrary | null>(null);
   const [segments, setSegments] = useState<WorkoutSegment[]>([]);
   const [loading, setLoading] = useState(false);
 

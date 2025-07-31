@@ -62,7 +62,7 @@ export default function WorkoutCalendar({
   selectedDate,
   onDateSelect,
   viewMode,
-  onViewModeChange: _,
+  onViewModeChange: _onViewModeChange,
   isLoading,
   onAddWorkout
 }: WorkoutCalendarProps) {
