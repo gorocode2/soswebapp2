@@ -9,7 +9,6 @@ import BottomNavigation from '../components/BottomNavigation';
 import AthleteSelector from './components/AthleteSelector';
 import WorkoutCalendar from './components/WorkoutCalendar';
 import AthleteProfile from './components/AthleteProfile';
-import CoachStats from './components/CoachStats';
 import WorkoutLibrary from './components/WorkoutLibrary';
 import workoutService from '@/services/workoutService';
 
@@ -242,13 +241,7 @@ export default function CoachPage() {
           <h1 className="text-white text-[32px] font-bold leading-tight tracking-[-0.015em] mb-2">
             {t('coach.title')}
           </h1>
-          <p className="text-[#94a3b8] text-base leading-normal">
-            {t('coach.subtitle')}
-          </p>
         </div>
-
-        {/* Coach Stats */}
-        <CoachStats athletes={athletes} workouts={workouts} />
 
         {/* Athlete Selection */}
         <div className="mb-6">
