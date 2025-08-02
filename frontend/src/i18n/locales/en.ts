@@ -74,7 +74,10 @@ export const en = {
       weeklyHours: 'Weekly Hours',
       avgPower: 'Average Power',
       fitness: 'Fitness Score',
-      totalRideTime: 'Total Ride Time'
+      totalRideTime: 'Total Ride Time',
+      workoutsCompleted: 'Completed WO',
+      ftp: 'FTP',
+      upcomingWorkouts: 'Upcoming WO'
     }
   },
 

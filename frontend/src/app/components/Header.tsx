@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { User } from '@/models/types';
 import { GearIcon } from './icons';
-import { LanguageSelector } from '@/i18n';
+
 
 interface HeaderProps {
   user: User | null;
@@ -34,15 +34,12 @@ export default function Header({ user, onLogout }: HeaderProps) {
 
       {/* Right: Language & Settings */}
       <div className="flex justify-end items-center gap-3">
-        <LanguageSelector compact={true} showText={false} />
-        <span className="text-white text-lg font-bold">Hi, {user?.firstName || user?.username}</span>
-        <button
+       <button
           onClick={onLogout}
           className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 bg-transparent text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0"
         >
-          <div className="text-white">
-            <GearIcon />
-          </div>
+        <span className="text-white text-lg font-bold">Hi, {user?.firstName || user?.username}</span>
+       
         </button>
       </div>
     </header>
