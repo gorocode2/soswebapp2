@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import WorkoutDetailModal from '../../components/WorkoutDetailModal';
+import { CalendarWorkout } from '@/types/workout';
 
 interface WorkoutLibrary {
   id: number;
   name: string;
   description?: string;
+  workout_description?: string; // intervals.icu format description
   training_type: string;
   primary_control_parameter: string;
   secondary_control_parameter?: string;
@@ -15,6 +18,7 @@ interface WorkoutLibrary {
   created_by?: number;
   is_public: boolean;
   is_active: boolean;
+  workoutid_icu?: string;
   created_at: string;
   updated_at: string;
   segments?: WorkoutSegment[];
@@ -66,6 +70,26 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
   const [selectedTrainingType, setSelectedTrainingType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutLibrary | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Convert WorkoutLibrary to CalendarWorkout format for the modal
+  const convertToCalendarWorkout = (workout: WorkoutLibrary) => {
+    return {
+      id: workout.id,
+      assignment_id: 0, // Not applicable for library workouts
+      name: workout.name,
+      type: workout.training_type,
+      duration: workout.estimated_duration_minutes,
+      difficulty: workout.difficulty_level || 5,
+      status: 'assigned' as const, // Use assigned as default for library workouts
+      priority: 'normal' as const,
+      date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+      time: null,
+      notes: workout.description || '',
+      coach_notes: null,
+      workout_library_id: workout.id
+    };
+  };
 
   // Load workout library data
   useEffect(() => {
@@ -416,7 +440,10 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
                   {filteredWorkouts.map(workout => (
                     <div
                       key={workout.id}
-                      onClick={() => setSelectedWorkout(workout)}
+                      onClick={() => {
+                        setSelectedWorkout(workout);
+                        setIsDetailModalOpen(true);
+                      }}
                       className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:bg-slate-700/50 cursor-pointer transition-all duration-200 hover:border-blue-500/50"
                     >
                       {/* Workout Header */}
@@ -511,6 +538,42 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
           )}
         </div>
       </div>
+
+      {/* Workout Detail Modal */}
+      {selectedWorkout && (
+        <WorkoutDetailModal
+          workout={convertToCalendarWorkout(selectedWorkout)}
+          isOpen={isDetailModalOpen}
+          onClose={() => {
+            setIsDetailModalOpen(false);
+            setSelectedWorkout(null);
+          }}
+          isLibraryWorkout={true}
+          selectedDate={selectedDate}
+          onStartWorkout={() => {
+            // Show add to calendar action instead
+            if (selectedDate && onSelectWorkout && selectedWorkout) {
+              onSelectWorkout(selectedWorkout);
+              setIsDetailModalOpen(false);
+              setSelectedWorkout(null);
+              onClose();
+            } else {
+              alert('Select a date in the calendar first to add this workout!');
+            }
+          }}
+          onCompleteWorkout={() => {
+            // Show add to calendar action instead
+            if (selectedDate && onSelectWorkout && selectedWorkout) {
+              onSelectWorkout(selectedWorkout);
+              setIsDetailModalOpen(false);
+              setSelectedWorkout(null);
+              onClose();
+            } else {
+              alert('Select a date in the calendar first to add this workout!');
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

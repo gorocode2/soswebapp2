@@ -14,7 +14,6 @@ export default function WorkoutPage() {
   const { user, logout } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
-  const [view, setView] = useState<'monthly' | 'weekly'>('weekly');
   const [selectedWorkout, setSelectedWorkout] = useState<CalendarWorkout | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -106,50 +105,27 @@ export default function WorkoutPage() {
       <Header user={user} onLogout={logout} />
       
       <main className="layout-content-container flex flex-col flex-1 p-4 pb-20">
-        {/* View Toggle */}
+        {/* Page Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-white">🦈 Training Schedule</h1>
-            <p className="text-slate-400">Dominate your workouts</p>
-          </div>
-          
-          <div className="flex bg-slate-800 border border-slate-700 rounded-lg p-1">
-            <button
-              onClick={() => setView('monthly')}
-              className={`
-                px-4 py-2 rounded-md text-sm font-medium transition-colors
-                ${view === 'monthly' 
-                  ? 'bg-cyan-500 text-white' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                }
-              `}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setView('weekly')}
-              className={`
-                px-4 py-2 rounded-md text-sm font-medium transition-colors
-                ${view === 'weekly' 
-                  ? 'bg-cyan-500 text-white' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                }
-              `}
-            >
-              Weekly
-            </button>
+            <h1 className="text-2xl font-bold text-white">Training Calendar</h1>
           </div>
         </div>
 
-        {/* Schedule Views */}
-        {view === 'monthly' ? (
+        {/* Monthly Schedule */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Monthly View</h2>
           <WorkoutMonthlySchedule 
             userId={userId}
             currentDate={memoizedCurrentDate}
             onDateSelect={handleDateSelect}
             onMonthChange={handleMonthChange}
           />
-        ) : (
+        </div>
+
+        {/* Weekly Schedule */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Weekly View</h2>
           <WorkoutWeeklySchedule 
             userId={userId}
             currentWeekStart={memoizedCurrentWeekStart}
@@ -157,7 +133,7 @@ export default function WorkoutPage() {
             onWorkoutSelect={handleWorkoutSelect}
             onWorkoutStart={handleWorkoutStart}
           />
-        )}
+        </div>
 
         {/* Workout Summary Stats */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">

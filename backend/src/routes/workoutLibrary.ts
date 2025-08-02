@@ -274,14 +274,15 @@ router.post('/templates', async (req: Request, res: Response) => {
     // Insert main workout
     const workoutResult = await client.query(`
       INSERT INTO workout_library (
-        name, description, training_type, primary_control_parameter,
+        name, description, workout_description, training_type, primary_control_parameter,
         secondary_control_parameter, estimated_duration_minutes, difficulty_level,
-        tags, is_public, created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        tags, is_public, workoutid_icu, created_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING id
     `, [
       workoutData.name,
       workoutData.description,
+      workoutData.workout_description,
       workoutData.training_type,
       workoutData.primary_control_parameter,
       workoutData.secondary_control_parameter,
@@ -289,31 +290,34 @@ router.post('/templates', async (req: Request, res: Response) => {
       workoutData.difficulty_level,
       workoutData.tags,
       workoutData.is_public || false,
+      workoutData.workoutid_icu,
       req.body.created_by // Should come from auth middleware
     ]);
     
     const workoutId = workoutResult.rows[0].id;
     
-    // Insert segments
-    for (const segment of workoutData.segments) {
-      await client.query(`
-        INSERT INTO workout_segments (
-          workout_library_id, segment_order, segment_type, name, duration_minutes,
-          duration_type, hr_min_percent, hr_max_percent, hr_zone, power_min_percent,
-          power_max_percent, power_zone, power_watts_min, power_watts_max,
-          cadence_min, cadence_max, rpe_min, rpe_max, repetitions,
-          rest_duration_minutes, rest_type, instructions, coaching_notes
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
-      `, [
-        workoutId, segment.segment_order, segment.segment_type, segment.name,
-        segment.duration_minutes, segment.duration_type, segment.hr_min_percent,
-        segment.hr_max_percent, segment.hr_zone, segment.power_min_percent,
-        segment.power_max_percent, segment.power_zone, segment.power_watts_min,
-        segment.power_watts_max, segment.cadence_min, segment.cadence_max,
-        segment.rpe_min, segment.rpe_max, segment.repetitions || 1,
-        segment.rest_duration_minutes, segment.rest_type || 'active',
-        segment.instructions, segment.coaching_notes
-      ]);
+    // Insert segments (optional - for backward compatibility)
+    if (workoutData.segments && workoutData.segments.length > 0) {
+      for (const segment of workoutData.segments) {
+        await client.query(`
+          INSERT INTO workout_segments (
+            workout_library_id, segment_order, segment_type, name, duration_minutes,
+            duration_type, hr_min_percent, hr_max_percent, hr_zone, power_min_percent,
+            power_max_percent, power_zone, power_watts_min, power_watts_max,
+            cadence_min, cadence_max, rpe_min, rpe_max, repetitions,
+            rest_duration_minutes, rest_type, instructions, coaching_notes
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+        `, [
+          workoutId, segment.segment_order, segment.segment_type, segment.name,
+          segment.duration_minutes, segment.duration_type, segment.hr_min_percent,
+          segment.hr_max_percent, segment.hr_zone, segment.power_min_percent,
+          segment.power_max_percent, segment.power_zone, segment.power_watts_min,
+          segment.power_watts_max, segment.cadence_min, segment.cadence_max,
+          segment.rpe_min, segment.rpe_max, segment.repetitions || 1,
+          segment.rest_duration_minutes, segment.rest_type || 'active',
+          segment.instructions, segment.coaching_notes
+        ]);
+      }
     }
     
     // Link categories if provided

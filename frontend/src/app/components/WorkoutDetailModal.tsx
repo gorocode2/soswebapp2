@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CalendarWorkout } from '@/types/workout';
-import { WorkoutLibraryDetailResponse, WorkoutSegment, WorkoutLibrary } from '@/models/types';
+import { WorkoutLibraryDetailResponse, WorkoutLibrary } from '@/models/types';
 import workoutService from '@/services/workoutService';
 import WorkoutStructureGraph from './WorkoutStructureGraph';
 import { useTranslation } from '@/i18n';
@@ -44,6 +44,8 @@ interface WorkoutDetailModalProps {
   onClose: () => void;
   onStartWorkout: (workout: CalendarWorkout) => void;
   onCompleteWorkout: (workout: CalendarWorkout) => void;
+  isLibraryWorkout?: boolean; // New prop to indicate if this is from library
+  selectedDate?: Date | null; // For library workouts
 }
 
 export default function WorkoutDetailModal({
@@ -51,11 +53,12 @@ export default function WorkoutDetailModal({
   isOpen,
   onClose,
   onStartWorkout,
-  onCompleteWorkout
+  onCompleteWorkout,
+  isLibraryWorkout = false,
+  selectedDate
 }: WorkoutDetailModalProps) {
   const { t } = useTranslation();
   const [workoutDetails, setWorkoutDetails] = useState<WorkoutLibrary | null>(null);
-  const [segments, setSegments] = useState<WorkoutSegment[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Load workout details when modal opens
@@ -74,13 +77,11 @@ export default function WorkoutDetailModal({
           console.log('🦈 Workout details loaded:', workoutDetails);
           
           setWorkoutDetails(workoutDetails);
-          setSegments(workoutDetails.segments || []);
         } catch (error) {
           console.error('Error loading workout details:', error);
           // For now, if the API fails, we'll just show basic workout info
-          // without detailed segments structure
+          // without detailed structure
           setWorkoutDetails(null);
-          setSegments([]);
         } finally {
           setLoading(false);
         }
@@ -95,21 +96,6 @@ export default function WorkoutDetailModal({
     const typeKey = type.toLowerCase();
     const descriptionKey = `workout.descriptions.${typeKey}`;
     return t(descriptionKey) !== descriptionKey ? t(descriptionKey) : t('workout.descriptions.default');
-  };
-
-  const getSegmentTypeColor = (type: string): string => {
-    switch (type) {
-      case 'warmup': return 'bg-blue-500/20 text-blue-400 border-blue-500/50';
-      case 'work': return 'bg-red-500/20 text-red-400 border-red-500/50';
-      case 'rest': return 'bg-green-500/20 text-green-400 border-green-500/50';
-      case 'cooldown': return 'bg-purple-500/20 text-purple-400 border-purple-500/50';
-      default: return 'bg-slate-500/20 text-slate-400 border-slate-500/50';
-    }
-  };
-
-  const getSegmentTypeName = (type: string): string => {
-    const segmentKey = `workout.segments.${type}`;
-    return t(segmentKey) !== segmentKey ? t(segmentKey) : type.toUpperCase();
   };
 
   const getWorkoutTypeColor = (type: string): string => {
@@ -144,23 +130,9 @@ export default function WorkoutDetailModal({
     onClose();
   };
 
-  // Calculate total duration from segments
+  // Calculate total duration
   const getTotalDuration = (): number => {
-    if (segments.length > 0) {
-      return segments.reduce((total, segment) => {
-        const segmentDuration = segment.duration_minutes || 0;
-        const repetitions = segment.repetitions || 1;
-        const restDuration = segment.rest_duration_minutes || 0;
-        
-        // For intervals, multiply by repetitions and add rest time
-        if (repetitions > 1) {
-          return total + (segmentDuration * repetitions) + (restDuration * (repetitions - 1));
-        }
-        return total + segmentDuration;
-      }, 0);
-    }
-    // Fallback to workout duration if no segments
-    return workout.duration;
+    return workoutDetails?.estimated_duration_minutes || workout.duration;
   };
 
   if (!isOpen) return null;
@@ -248,98 +220,71 @@ export default function WorkoutDetailModal({
             </div>
 
             {/* Workout Structure Graph */}
-            {segments.length > 0 && (
+            {workoutDetails?.workout_description && (
               <WorkoutStructureGraph
-                segments={segments}
+                workoutDescription={workoutDetails.workout_description}
                 primaryControlParameter={
-                  workoutDetails?.primary_control_parameter === 'power' ? 'power' : 'hr'
+                  workoutDetails.primary_control_parameter === 'power' ? 'power' : 'hr'
                 }
                 width={800}
                 height={200}
               />
             )}
 
-            {/* Workout Segments */}
-            <div className="mb-6">
-              <h3 className="text-xl font-bold text-white mb-4">{t('workout.structure')}</h3>
-              {segments.length > 0 ? (
-                <div className="space-y-3">
-                  {segments.map((segment, index) => (
-                    <div
-                      key={segment.id}
-                      className="flex items-center gap-4 p-4 bg-slate-700/30 rounded-lg border border-slate-600"
-                    >
-                      <div className="flex-shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                        {segment.segment_order || index + 1}
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className={`px-2 py-1 rounded text-xs font-medium border ${getSegmentTypeColor(segment.segment_type)}`}>
-                            {getSegmentTypeName(segment.segment_type)}
-                          </span>
-                          <span className="text-white font-semibold">
-                            {segment.name && segment.name !== segment.segment_type ? segment.name : `${getSegmentTypeName(segment.segment_type)} segment`}
-                          </span>
-                          <span className="text-slate-400">{segment.duration_minutes} {t('time.minutes')}</span>
-                          {(segment.hr_min_percent || segment.hr_max_percent) && (
-                            <span className="text-sm text-slate-400">
-                              HR: {segment.hr_min_percent || 0}-{segment.hr_max_percent || 0}%
-                            </span>
-                          )}
-                          {(segment.power_min_percent || segment.power_max_percent) && (
-                            <span className="text-sm text-slate-400">
-                              {t('workout.graph.power')}: {segment.power_min_percent || 0}-{segment.power_max_percent || 0}%
-                            </span>
-                          )}
-                          {segment.repetitions > 1 && (
-                            <span className="text-sm text-cyan-400">
-                              {segment.repetitions}x
-                            </span>
-                          )}
-                        </div>
-                        
-                        {segment.instructions && (
-                          <p className="text-sm text-slate-300">{segment.instructions}</p>
-                        )}
-                        
-                        {segment.coaching_notes && (
-                          <p className="text-sm text-amber-300 italic mt-1">
-                            {t('workout.coachNotes')}: {segment.coaching_notes}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+            {/* Workout Description */}
+            {workoutDetails?.workout_description && (
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-white mb-4">{t('workout.structure')}</h3>
+                <div className="bg-slate-700/30 p-4 rounded-lg border border-slate-600">
+                  <pre className="text-slate-300 whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                    {workoutDetails.workout_description}
+                  </pre>
                 </div>
-              ) : (
-                <div className="text-center py-8 text-slate-400">
-                  <p className="mb-2">{t('workout.noStructure')}</p>
-                  <p className="text-sm">{t('workout.structureNote')}</p>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex gap-4 pt-4 border-t border-slate-700">
-              {workout.status === 'assigned' && (
+              {isLibraryWorkout && selectedDate ? (
                 <button
                   onClick={handleStartClick}
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-semibold transition-colors"
                 >
-                  <PlayIcon />
-                  {t('workout.startWorkout')}
+                  📅 Add to Calendar ({selectedDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    weekday: 'short'
+                  })})
                 </button>
-              )}
-              
-              {workout.status === 'in_progress' && (
+              ) : isLibraryWorkout ? (
                 <button
-                  onClick={handleCompleteClick}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-semibold transition-colors"
+                  onClick={() => alert('Select a date in the calendar first to add this workout!')}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-slate-600 text-slate-300 rounded-lg font-semibold cursor-not-allowed"
                 >
-                  <CheckIcon />
-                  {t('workout.completeWorkout')}
+                  📅 Select Date First
                 </button>
+              ) : (
+                <>
+                  {workout.status === 'assigned' && (
+                    <button
+                      onClick={handleStartClick}
+                      className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-semibold transition-colors"
+                    >
+                      <PlayIcon />
+                      {t('workout.startWorkout')}
+                    </button>
+                  )}
+                  
+                  {workout.status === 'in_progress' && (
+                    <button
+                      onClick={handleCompleteClick}
+                      className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-semibold transition-colors"
+                    >
+                      <CheckIcon />
+                      {t('workout.completeWorkout')}
+                    </button>
+                  )}
+                </>
               )}
               
               <button

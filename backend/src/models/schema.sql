@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS workout_library (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     description TEXT,
+    workout_description TEXT, -- Detailed workout structure in intervals.icu format
     training_type VARCHAR(50) NOT NULL CHECK (training_type IN (
         'zone2', 'tempo', 'interval', 'vo2max', 'recovery', 
         'threshold', 'neuromuscular', 'endurance', 'sprint'
@@ -129,6 +130,7 @@ CREATE TABLE IF NOT EXISTS workout_library (
     created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     is_public BOOLEAN DEFAULT false, -- Can other coaches use this workout?
     is_active BOOLEAN DEFAULT true,
+    workoutid_icu VARCHAR(255), -- intervals.icu workout ID for linking external workouts
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

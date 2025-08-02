@@ -493,6 +493,7 @@ export interface WorkoutLibrary {
   id: number;
   name: string;
   description?: string;
+  workout_description?: string; // Detailed workout structure in intervals.icu format
   training_type: TrainingType;
   primary_control_parameter: ControlParameter;
   secondary_control_parameter?: ControlParameter;
@@ -502,11 +503,12 @@ export interface WorkoutLibrary {
   created_by?: number;
   is_public: boolean;
   is_active: boolean;
+  workoutid_icu?: string; // intervals.icu workout ID for linking external workouts
   created_at: string;
   updated_at: string;
   
-  // Related data (populated via joins)
-  segments?: WorkoutSegment[];
+  // Related data (populated via joins) - Keep for backward compatibility
+  segments?: WorkoutSegment[]; // Deprecated: Use workout_description instead
   categories?: WorkoutCategory[];
   creator?: Pick<User, 'id' | 'username' | 'first_name' | 'last_name'>;
 }
@@ -647,6 +649,7 @@ export interface WorkoutSegmentResult {
 export interface CreateWorkoutLibraryRequest {
   name: string;
   description?: string;
+  workout_description?: string; // Detailed workout structure in intervals.icu format
   training_type: TrainingType;
   primary_control_parameter: ControlParameter;
   secondary_control_parameter?: ControlParameter;
@@ -654,8 +657,9 @@ export interface CreateWorkoutLibraryRequest {
   difficulty_level?: number;
   tags?: string[];
   is_public?: boolean;
+  workoutid_icu?: string; // intervals.icu workout ID for linking external workouts
   category_ids?: number[];
-  segments: CreateWorkoutSegmentRequest[];
+  segments?: CreateWorkoutSegmentRequest[]; // Deprecated: Use workout_description instead
 }
 
 // Creating workout segments
