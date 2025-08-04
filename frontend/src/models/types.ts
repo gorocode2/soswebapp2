@@ -12,6 +12,7 @@ export interface User {
   avatarUrl?: string;
   createdAt: string;
   intervalsIcuId?: string; // intervals.icu account ID for 3rd party integration
+  is_coach: boolean; // Whether user has coach privileges
 }
 
 // For user registration

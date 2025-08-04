@@ -26,6 +26,7 @@ interface RegisterResponse {
     subscription_type: string;
     apex_score: number;
     is_verified: boolean;
+    is_coach: boolean;
     created_at: string;
   };
   error?: string;
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<RegisterR
       subscription_type: 'free',
       apex_score: 5.0,
       is_verified: true,
+      is_coach: false, // Default to non-coach
       created_at: new Date().toISOString()
     };
 

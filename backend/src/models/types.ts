@@ -49,6 +49,7 @@ export interface User {
   avatar_url?: string;
   bio?: string;
   intervals_icu_id?: string; // intervals.icu account ID for 3rd party integration
+  is_coach: boolean; // Whether user has coach privileges
   social_links: Record<string, string>;
   coaching_preferences: {
     intensity: 'low' | 'moderate' | 'high' | 'extreme';
@@ -123,6 +124,7 @@ export interface UserResponse {
   avatarUrl?: string;
   createdAt: Date;
   apex_score?: number; // AI-calculated performance score
+  is_coach: boolean; // Whether user has coach privileges
 }
 
 export interface UserUpdateRequest {

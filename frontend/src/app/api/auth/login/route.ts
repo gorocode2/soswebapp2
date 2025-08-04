@@ -18,6 +18,7 @@ interface LoginResponse {
     subscription_type: string;
     apex_score: number;
     is_verified: boolean;
+    is_coach: boolean;
     created_at: string;
   };
   error?: string;
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<LoginResp
         subscription_type: 'premium',
         apex_score: 8.5,
         is_verified: true,
+        is_coach: true, // Set to true for development
         created_at: new Date().toISOString()
       }
     });

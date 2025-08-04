@@ -2,18 +2,20 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 
 interface BottomNavItem {
   href: string;
   icon: string;
   translationKey: string;
+  requiresCoach?: boolean; // New property to mark coach-only items
 }
 
 const navItems: BottomNavItem[] = [
   { href: '/dashboard', icon: '📊', translationKey: 'nav.dashboard' },
   { href: '/workout', icon: '💪', translationKey: 'nav.workout' },
-  { href: '/coach', icon: '🦈', translationKey: 'nav.coach' },
+  { href: '/coach', icon: '🦈', translationKey: 'nav.coach', requiresCoach: true },
   { href: '/videos', icon: '🎥', translationKey: 'nav.videos' },
   { href: '/profile', icon: '👤', translationKey: 'nav.profile' },
 ];
@@ -21,11 +23,20 @@ const navItems: BottomNavItem[] = [
 export default function BottomNavigation() {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  // Filter nav items based on user role
+  const visibleNavItems = navItems.filter(item => {
+    if (item.requiresCoach) {
+      return user?.is_coach === true;
+    }
+    return true;
+  });
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/20 backdrop-blur-md border-t border-slate-800 z-50">
       <div className="flex justify-around items-center py-2 px-4 max-w-md mx-auto">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link

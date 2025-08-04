@@ -167,9 +167,15 @@ export default function CoachPage() {
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
       router.push('/auth?redirect=/coach');
+      return;
     }
-    // TODO: Add coach role verification here
-  }, [isLoading, isLoggedIn, router]);
+    
+    // Check if user has coach permissions
+    if (!isLoading && isLoggedIn && user && !user.is_coach) {
+      router.push('/dashboard'); // Redirect non-coaches to dashboard
+      return;
+    }
+  }, [isLoading, isLoggedIn, user, router]);
 
     // Load athletes list
   useEffect(() => {

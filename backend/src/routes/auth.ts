@@ -111,7 +111,7 @@ router.post('/register', async (req: Request, res: Response) => {
         date_of_birth
       ) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING id, uuid, email, username, first_name, last_name, cycling_experience, weight_kg, height_cm, created_at
+      RETURNING id, uuid, email, username, first_name, last_name, cycling_experience, weight_kg, height_cm, is_coach, created_at
     `;
 
     const values = [
@@ -164,7 +164,8 @@ router.post('/register', async (req: Request, res: Response) => {
       weight: newUser.weight_kg,
       height: newUser.height_cm,
       createdAt: newUser.created_at,
-      avatarUrl: undefined // Default avatar can be added later
+      avatarUrl: undefined, // Default avatar can be added later
+      is_coach: newUser.is_coach
     };
 
     res.status(201).json({
@@ -220,7 +221,7 @@ router.post('/login', async (req: Request, res: Response) => {
       SELECT 
         id, uuid, email, username, first_name, last_name, 
         password_hash, cycling_experience, weight_kg, height_cm, 
-        avatar_url, created_at, updated_at
+        avatar_url, is_coach, created_at, updated_at
       FROM users 
       WHERE email = $1
     `;
@@ -268,7 +269,8 @@ router.post('/login', async (req: Request, res: Response) => {
       weight: user.weight_kg,
       height: user.height_cm,
       avatarUrl: user.avatar_url,
-      createdAt: user.created_at
+      createdAt: user.created_at,
+      is_coach: user.is_coach
     };
 
     res.json({
