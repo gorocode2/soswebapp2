@@ -39,6 +39,7 @@ function AuthPageContent() {
     firstName: '',
     lastName: '',
     fitnessLevel: 'beginner',
+    is_coach: false, // Default to false for regular users
   });
 
   // Handle login form submission
