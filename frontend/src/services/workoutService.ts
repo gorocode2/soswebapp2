@@ -412,6 +412,55 @@ class WorkoutService {
       completion_rate: stats.total_assigned > 0 ? (stats.completed / stats.total_assigned) * 100 : 0,
     };
   }
+
+  // =================================================================
+  // 🦈 INTERVALS.ICU SYNC METHODS
+  // =================================================================
+
+  /**
+   * Sync workouts from intervals.icu to workout library
+   */
+  async syncWorkoutsFromIntervalsIcu(userId: number): Promise<{
+    success: boolean;
+    message: string;
+    stats?: {
+      total_processed: number;
+      added: number;
+      skipped: number;
+      errors: number;
+    };
+    errors?: string[];
+  }> {
+    try {
+      console.log('🦈 Syncing workouts from intervals.icu for user:', userId);
+
+      const response = await this.fetchApi<{
+        success: boolean;
+        message: string;
+        stats?: {
+          total_processed: number;
+          added: number;
+          skipped: number;
+          errors: number;
+        };
+        errors?: string[];
+      }>('/workout-library/sync-intervals-icu', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      // Clear cache after sync to ensure fresh data
+      this.clearCache();
+
+      return response;
+    } catch (error) {
+      console.error('Error syncing workouts from intervals.icu:', error);
+      throw error;
+    }
+  }
 }
 
 export const workoutService = new WorkoutService();

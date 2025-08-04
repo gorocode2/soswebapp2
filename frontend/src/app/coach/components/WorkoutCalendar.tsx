@@ -401,8 +401,8 @@ export default function WorkoutCalendar({
           📅 {t('coach.calendar.weekView')} - Week of {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
         </h4>
         
-        {/* Week days - one day per line */}
-        <div className="space-y-3">
+        {/* Week days - one day per line with mobile optimization */}
+        <div className="space-y-2 sm:space-y-3">
           {generateWeekDays().map((date, index) => {
             const dayWorkouts = getWorkoutsForDate(date);
             const isTodayDate = isToday(date);
@@ -412,55 +412,59 @@ export default function WorkoutCalendar({
               <div
                 key={index}
                 className={`
-                  flex items-center gap-4 p-4 border border-slate-600/50 rounded-lg bg-slate-700/30
+                  flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 border border-slate-600/50 rounded-lg bg-slate-700/30
                   ${isTodayDate ? 'ring-2 ring-blue-500' : ''}
                   ${isSelectedDate ? 'ring-2 ring-green-500' : ''}
                 `}
               >
-                {/* Day info - fixed width section */}
-                <div className="flex-shrink-0 w-32">
+                {/* Day info - flexible width on mobile, centered */}
+                <div className="flex-shrink-0 w-full sm:w-32 text-center sm:text-left">
                   <div className={`text-sm font-semibold ${
                     isTodayDate ? 'text-blue-400' : 
                     isSelectedDate ? 'text-green-400' : 'text-white'
                   }`}>
-                    {date.toLocaleDateString('en-US', { weekday: 'long' })}
+                    {date.toLocaleDateString('en-US', { weekday: 'long' })} {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {isTodayDate && <span className="text-blue-400 font-medium ml-1">Today</span>}
                   </div>
-                  <div className="text-xs text-[#94a3b8]">
-                    {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </div>
-                  {isTodayDate && (
-                    <div className="text-xs text-blue-400 font-medium">Today</div>
-                  )}
                 </div>
                 
-                {/* Workouts section - flexible width */}
-                <div className="flex-1">
+                {/* Workouts section - flexible width, centered content */}
+                <div className="flex-1 min-w-0 w-full">
                   {dayWorkouts.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="space-y-2">
                       {dayWorkouts.map((workout) => (
                         <div
                           key={workout.id}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-105 ${getWorkoutTypeColor(workout.type)}`}
+                          className={`flex items-start gap-2 p-2 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.02] ${getWorkoutTypeColor(workout.type)}`}
                           onClick={() => setSelectedWorkout(workout)}
                           title={`${workout.name} - ${workout.duration ? workout.duration + ' min' : ''}`}
                         >
-                          <span className={`text-xs px-2 py-1 rounded ${getStatusColor(workout.status)}`}>
+                          <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5 ${getStatusColor(workout.status)}`}>
                             {getStatusIcon(workout.status)}
                           </span>
                           
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm truncate" title={workout.name}>
+                            <div 
+                              className="font-medium text-sm text-white break-words leading-tight overflow-hidden"
+                              style={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                maxHeight: '2.5rem'
+                              }}
+                              title={workout.name}
+                            >
                               {workout.name}
                             </div>
-                            <div className="flex items-center gap-2 text-xs opacity-75">
+                            <div className="flex flex-wrap items-center gap-1 text-xs opacity-75 mt-1">
                               {workout.duration && (
-                                <span>{workout.duration}m</span>
+                                <span className="bg-black/20 px-1.5 py-0.5 rounded whitespace-nowrap">{workout.duration}m</span>
                               )}
                               {workout.priority && workout.priority === 'high' && (
-                                <span className="text-red-400">🔥 High</span>
+                                <span className="text-red-400 bg-black/20 px-1.5 py-0.5 rounded whitespace-nowrap">🔥 High</span>
                               )}
                               {workout.difficultyLevel && (
-                                <span className="text-orange-400">💪 L{workout.difficultyLevel}</span>
+                                <span className="text-orange-400 bg-black/20 px-1.5 py-0.5 rounded whitespace-nowrap">💪 L{workout.difficultyLevel}</span>
                               )}
                             </div>
                           </div>
@@ -468,14 +472,14 @@ export default function WorkoutCalendar({
                       ))}
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center text-[#94a3b8] text-sm">
+                    <div className="flex items-center justify-center text-[#94a3b8] text-sm py-4">
                       <span>-</span>
                     </div>
                   )}
                 </div>
                 
-                {/* Add workout button */}
-                <div className="flex-shrink-0">
+                {/* Add workout button - centered in day block */}
+                <div className="flex-shrink-0 self-center w-full sm:w-auto flex justify-center sm:justify-start">
                   <button
                     onClick={() => handleAddWorkout(date)}
                     className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center text-lg font-bold transition-colors shadow-lg"

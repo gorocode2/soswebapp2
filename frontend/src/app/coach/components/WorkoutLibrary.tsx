@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { WorkoutDetailModal } from '@/components';
 import { CalendarWorkout } from '@/types/workout';
+import { useAuth } from '@/contexts/AuthContext';
+import workoutService from '@/services/workoutService';
 
 interface WorkoutLibrary {
   id: number;
@@ -63,6 +65,7 @@ interface WorkoutLibraryProps {
 }
 
 export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selectedDate }: WorkoutLibraryProps) {
+  const { user } = useAuth();
   const [workouts, setWorkouts] = useState<WorkoutLibrary[]>([]);
   const [categories, setCategories] = useState<WorkoutCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,6 +74,8 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutLibrary | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string>('');
 
   // Convert WorkoutLibrary to CalendarWorkout format for the modal
   const convertToCalendarWorkout = (workout: WorkoutLibrary) => {
@@ -149,6 +154,39 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
     }
   };
 
+  // Sync workouts from intervals.icu
+  const handleSyncWorkouts = async () => {
+    if (!user?.id) {
+      setSyncMessage('❌ User not found');
+      return;
+    }
+
+    setIsSyncing(true);
+    setSyncMessage('🦈 Syncing workouts from intervals.icu...');
+
+    try {
+      const result = await workoutService.syncWorkoutsFromIntervalsIcu(user.id);
+      
+      if (result.success) {
+        setSyncMessage(`✅ ${result.message}`);
+        // Reload the workout library to show newly synced workouts
+        await loadWorkoutLibrary();
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => setSyncMessage(''), 5000);
+      } else {
+        setSyncMessage(`❌ ${result.message}`);
+        setTimeout(() => setSyncMessage(''), 5000);
+      }
+    } catch (error) {
+      console.error('Error syncing workouts:', error);
+      setSyncMessage('❌ Failed to sync workouts from intervals.icu');
+      setTimeout(() => setSyncMessage(''), 5000);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // Filter workouts based on selected filters
   const filteredWorkouts = workouts.filter(workout => {
     const matchesSearch = searchQuery === '' || 
@@ -212,8 +250,22 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
       >
         {/* Header - Fixed */}
         <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <div>
+          <div className="flex items-center gap-4">
             <h2 className="text-white text-2xl font-bold">🦈 Workout Library</h2>
+            
+            {/* Update Workout Button */}
+            <button
+              onClick={handleSyncWorkouts}
+              disabled={isSyncing}
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                isSyncing 
+                  ? 'bg-slate-600 text-slate-400 cursor-not-allowed' 
+                  : 'bg-cyan-500 hover:bg-cyan-600 text-white'
+              }`}
+              title="Sync workouts from intervals.icu"
+            >
+              {isSyncing ? '⏳ Syncing...' : '🔄 Update Workouts'}
+            </button>
           </div>
           
           <button
@@ -223,6 +275,13 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
             ✕
           </button>
         </div>
+
+        {/* Sync Message */}
+        {syncMessage && (
+          <div className="px-6 py-3 bg-slate-700/50 border-b border-slate-700">
+            <p className="text-sm text-white">{syncMessage}</p>
+          </div>
+        )}
 
         {/* Scrollable Content - Everything flows together */}
         <div className="flex-1 overflow-y-auto">

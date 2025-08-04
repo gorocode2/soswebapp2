@@ -910,4 +910,160 @@ router.delete('/assignments/:id', async (req: Request, res: Response) => {
   }
 });
 
+// =================================================================
+// 🦈 SYNC WORKOUTS FROM INTERVALS.ICU
+// =================================================================
+
+// Sync workouts from intervals.icu to workout library
+router.post('/sync-intervals-icu', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required'
+      });
+    }
+
+    // Get user's intervals.icu ID
+    const userResult = await db.query(
+      'SELECT intervals_icu_id FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    const user = userResult.rows[0];
+    if (!user.intervals_icu_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'User does not have intervals.icu ID configured'
+      });
+    }
+
+    // Get workouts from intervals.icu
+    const intervalsResult = await intervalsIcuService.getWorkouts(user.intervals_icu_id);
+    
+    if (!intervalsResult.success || !intervalsResult.workouts) {
+      return res.status(500).json({
+        success: false,
+        error: intervalsResult.message
+      });
+    }
+
+    const workouts = intervalsResult.workouts;
+    let addedCount = 0;
+    let skippedCount = 0;
+    const errors: string[] = [];
+
+    console.log(`🦈 Processing ${workouts.length} workouts from intervals.icu`);
+
+    for (const workout of workouts) {
+      try {
+        // Check if workout already exists by intervals.icu ID
+        const existingWorkout = await db.query(
+          'SELECT id FROM workout_library WHERE workoutid_icu = $1',
+          [workout.id?.toString()]
+        );
+
+        if (existingWorkout.rows.length > 0) {
+          skippedCount++;
+          continue;
+        }
+
+        // Map intervals.icu workout to our format
+        const workoutData = {
+          name: workout.name || 'Imported Workout',
+          description: workout.description || '',
+          workout_description: workout.description || '',
+          training_type: mapIntervalsIcuType(workout.type || 'endurance'),
+          primary_control_parameter: 'power', // Default to power, can be customized
+          estimated_duration_minutes: Math.round((workout.duration || 3600) / 60), // Convert seconds to minutes
+          difficulty_level: workout.difficulty || 5, // Default difficulty
+          tags: workout.tags || [],
+          created_by: userId,
+          is_public: false,
+          is_active: true,
+          workoutid_icu: workout.id?.toString()
+        };
+
+        // Insert workout into database
+        const insertResult = await db.query(`
+          INSERT INTO workout_library (
+            name, description, workout_description, training_type, 
+            primary_control_parameter, estimated_duration_minutes, 
+            difficulty_level, tags, created_by, is_public, is_active, workoutid_icu
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+          RETURNING id
+        `, [
+          workoutData.name,
+          workoutData.description,
+          workoutData.workout_description,
+          workoutData.training_type,
+          workoutData.primary_control_parameter,
+          workoutData.estimated_duration_minutes,
+          workoutData.difficulty_level,
+          workoutData.tags,
+          workoutData.created_by,
+          workoutData.is_public,
+          workoutData.is_active,
+          workoutData.workoutid_icu
+        ]);
+
+        addedCount++;
+        console.log(`🦈 Added workout: ${workoutData.name} (ID: ${insertResult.rows[0].id})`);
+
+      } catch (error) {
+        const errorMsg = `Failed to import workout "${workout.name}": ${error instanceof Error ? error.message : 'Unknown error'}`;
+        errors.push(errorMsg);
+        console.error('🦈 Error importing workout:', errorMsg);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `🦈 Sync complete! Added ${addedCount} new workouts, skipped ${skippedCount} existing ones`,
+      stats: {
+        total_processed: workouts.length,
+        added: addedCount,
+        skipped: skippedCount,
+        errors: errors.length
+      },
+      errors: errors.length > 0 ? errors : undefined
+    });
+
+  } catch (error) {
+    console.error('Error syncing workouts from intervals.icu:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to sync workouts from intervals.icu' 
+    });
+  }
+});
+
+// Helper function to map intervals.icu workout types to our training types
+function mapIntervalsIcuType(intervalsType: string): string {
+  const typeMap: { [key: string]: string } = {
+    'Endurance': 'endurance',
+    'Tempo': 'tempo', 
+    'Threshold': 'threshold',
+    'VO2max': 'vo2max',
+    'Anaerobic': 'vo2max',
+    'Sprint': 'sprint',
+    'Recovery': 'recovery',
+    'Zone 2': 'zone2',
+    'Intervals': 'interval',
+    'Neuromuscular': 'neuromuscular',
+    'Sweet Spot': 'tempo'
+  };
+
+  return typeMap[intervalsType] || 'endurance';
+}
+
 export default router;

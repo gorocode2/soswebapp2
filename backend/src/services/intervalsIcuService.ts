@@ -278,6 +278,69 @@ export class IntervalsIcuService {
   }
 
   /**
+   * Get all workouts from intervals.icu athlete account
+   */
+  async getWorkouts(athleteIntervalsIcuId: string): Promise<{ 
+    success: boolean; 
+    workouts?: any[]; 
+    message: string 
+  }> {
+    if (!this.apiKey) {
+      return {
+        success: false,
+        message: 'Intervals.icu API key not configured'
+      };
+    }
+
+    if (!athleteIntervalsIcuId) {
+      return {
+        success: false,
+        message: 'Athlete does not have intervals.icu ID configured'
+      };
+    }
+
+    try {
+      console.log('🦈 Getting workouts from intervals.icu for athlete:', athleteIntervalsIcuId);
+
+      const response = await fetch(`${this.baseUrl}/athlete/${athleteIntervalsIcuId}/workouts`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${Buffer.from(`API_KEY:${this.apiKey}`).toString('base64')}`,
+          'Accept': '*/*'
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🦈 Intervals.icu get workouts error:', response.status, errorText);
+        
+        return {
+          success: false,
+          message: `Failed to get workouts from intervals.icu: ${response.status} ${response.statusText}`
+        };
+      }
+
+      const workouts = await response.json() as any[];
+      
+      console.log(`🦈 Successfully retrieved ${workouts.length} workouts from intervals.icu`);
+      
+      return {
+        success: true,
+        workouts,
+        message: `Retrieved ${workouts.length} workouts successfully`
+      };
+
+    } catch (error) {
+      console.error('🦈 Error getting workouts from intervals.icu:', error);
+      
+      return {
+        success: false,
+        message: `Failed to get workouts from intervals.icu: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  /**
    * Check if intervals.icu is configured
    */
   isConfigured(): boolean {
