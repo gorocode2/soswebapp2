@@ -1,7 +1,11 @@
 import express from 'express';
 import { Pool } from 'pg';
+import { IntervalsIcuService } from '../services/intervalsIcuService';
 
 const router = express.Router();
+
+// Initialize intervals.icu service
+const intervalsIcuService = new IntervalsIcuService();
 
 // Database connection pool
 const pool = new Pool({
@@ -93,6 +97,7 @@ router.get('/athletes/:athleteId/workouts', async (req, res) => {
     const result = await client.query(`
       SELECT 
         wa.id,
+        wa.workout_library_id,
         wa.scheduled_date,
         wa.status,
         wa.priority,
@@ -154,7 +159,7 @@ router.get('/athletes/:athleteId/workouts', async (req, res) => {
       console.log('🔍 Backend - Using raw date string:', dateString);
       
       return {
-        id: row.id,
+        id: row.workout_library_id, // Use workout_library_id for details fetching
         assignment_id: row.id, // Add assignment_id for deletion functionality
         date: dateString,
         name: row.workout_name,
@@ -331,6 +336,163 @@ router.get('/athletes/:athleteId/profile', async (req, res) => {
       success: false,
       message: 'Failed to fetch athlete profile',
       error: err.message
+    });
+  }
+});
+
+// DELETE /api/coach/workout-assignments/:assignmentId - Remove a workout assignment
+router.delete('/workout-assignments/:assignmentId', async (req, res) => {
+  try {
+    const { assignmentId } = req.params;
+    const client = await pool.connect();
+    
+    // First, get the assignment details including intervals.icu event ID and athlete's intervals.icu ID
+    const assignmentResult = await client.query(`
+      SELECT 
+        wa.id,
+        wa.intervals_icu_event_id,
+        wl.name as workout_name,
+        u.username as athlete_username,
+        u.intervals_icu_id as athlete_intervals_icu_id
+      FROM workout_assignments wa
+      JOIN workout_library wl ON wa.workout_library_id = wl.id
+      JOIN users u ON wa.assigned_to_user_id = u.id
+      WHERE wa.id = $1
+    `, [assignmentId]);
+    
+    if (assignmentResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json({
+        success: false,
+        message: 'Workout assignment not found'
+      });
+    }
+    
+    const assignment = assignmentResult.rows[0];
+    console.log(`🔍 Coach - Removing workout assignment: ${assignment.workout_name} for ${assignment.athlete_username}`);
+    
+    // Remove from intervals.icu if intervals_icu_event_id exists
+    let intervalsIcuResult = null;
+    if (assignment.intervals_icu_event_id && assignment.athlete_intervals_icu_id) {
+      console.log(`🔗 Removing intervals.icu event: ${assignment.intervals_icu_event_id} for athlete: ${assignment.athlete_intervals_icu_id}`);
+      
+      try {
+        intervalsIcuResult = await intervalsIcuService.deleteWorkout(
+          assignment.athlete_intervals_icu_id,
+          assignment.intervals_icu_event_id
+        );
+        
+        if (intervalsIcuResult.success) {
+          console.log('✅ Successfully removed workout from intervals.icu');
+        } else {
+          console.warn('⚠️ Failed to remove workout from intervals.icu:', intervalsIcuResult.message);
+        }
+      } catch (error) {
+        console.error('❌ Error removing workout from intervals.icu:', error);
+        intervalsIcuResult = {
+          success: false,
+          message: 'Error communicating with intervals.icu'
+        };
+      }
+    } else if (assignment.intervals_icu_event_id) {
+      console.warn('⚠️ Workout has intervals.icu event ID but athlete has no intervals.icu ID configured');
+    }
+    
+    // Delete the workout assignment from our database
+    const deleteResult = await client.query(`
+      DELETE FROM workout_assignments 
+      WHERE id = $1
+      RETURNING id
+    `, [assignmentId]);
+    
+    if (deleteResult.rows.length === 0) {
+      client.release();
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to delete workout assignment'
+      });
+    }
+    
+    client.release();
+    
+    console.log(`✅ Coach - Successfully removed workout assignment ${assignmentId}`);
+    
+    // Prepare response message
+    let message = 'Workout assignment removed successfully';
+    if (intervalsIcuResult) {
+      if (intervalsIcuResult.success) {
+        message += ' and removed from intervals.icu';
+      } else {
+        message += ` (Warning: Failed to remove from intervals.icu: ${intervalsIcuResult.message})`;
+      }
+    }
+    
+    res.json({
+      success: true,
+      message,
+      data: {
+        deletedId: assignmentId,
+        workoutName: assignment.workout_name,
+        athleteUsername: assignment.athlete_username,
+        intervalsIcu: intervalsIcuResult ? {
+          removed: intervalsIcuResult.success,
+          message: intervalsIcuResult.message
+        } : null
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error removing workout assignment:', error);
+    const err = error as Error;
+    res.status(500).json({
+      success: false,
+      message: 'Failed to remove workout assignment',
+      error: err.message
+    });
+  }
+});
+
+// DEBUG endpoint to check workout assignment data integrity
+router.get('/debug/workout-assignments/:athleteId', async (req, res) => {
+  try {
+    const { athleteId } = req.params;
+    const client = await pool.connect();
+    
+    // Check workout assignments and their workout library references
+    const result = await client.query(`
+      SELECT 
+        wa.id as assignment_id,
+        wa.workout_library_id,
+        wa.assigned_to_user_id,
+        wa.scheduled_date,
+        wa.status,
+        wl.id as library_id_exists,
+        wl.name as library_name,
+        CASE WHEN wl.id IS NULL THEN 'MISSING' ELSE 'EXISTS' END as library_status
+      FROM workout_assignments wa
+      LEFT JOIN workout_library wl ON wa.workout_library_id = wl.id
+      WHERE wa.assigned_to_user_id = $1
+      ORDER BY wa.id DESC
+    `, [athleteId]);
+    
+    client.release();
+    
+    res.json({
+      success: true,
+      data: result.rows,
+      summary: {
+        total_assignments: result.rows.length,
+        missing_libraries: result.rows.filter(row => row.library_status === 'MISSING').length,
+        valid_assignments: result.rows.filter(row => row.library_status === 'EXISTS').length
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error in debug endpoint:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Debug query failed',
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });

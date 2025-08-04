@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CalendarWorkout } from '@/types/workout';
-import { WorkoutLibraryDetailResponse, WorkoutLibrary } from '@/models/types';
-import workoutService from '@/services/workoutService';
-import WorkoutStructureGraph from '@/app/workout/components/WorkoutStructureGraph';
-import { useTranslation } from '@/i18n';
+import { CalendarWorkout } from '../../types/workout';
+import { WorkoutLibraryDetailResponse, WorkoutLibrary } from '../../models/types';
+import workoutService from '../../services/workoutService';
+import WorkoutStructureGraph from '../workout/components/WorkoutStructureGraph';
+import { useTranslation } from '../../i18n';
 
 // SVG Icon Components
 const XIcon = () => (
@@ -38,14 +38,29 @@ const FireIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const EditIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256">
+    <path d="M227.31,73.37,182.63,28.69a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.69,147.31,64l24-24L216,84.69Z"></path>
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256">
+    <path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path>
+  </svg>
+);
+
 interface WorkoutDetailModalProps {
   workout: CalendarWorkout;
   isOpen: boolean;
   onClose: () => void;
   onStartWorkout: (workout: CalendarWorkout) => void;
   onCompleteWorkout: (workout: CalendarWorkout) => void;
+  onEditWorkout?: (workout: CalendarWorkout) => void; // New prop for editing
+  onRemoveWorkout?: (workout: CalendarWorkout) => void; // New prop for removing
   isLibraryWorkout?: boolean; // New prop to indicate if this is from library
   selectedDate?: Date | null; // For library workouts
+  showCoachActions?: boolean; // New prop to show coach-specific actions (edit/remove)
 }
 
 export default function WorkoutDetailModal({
@@ -54,8 +69,11 @@ export default function WorkoutDetailModal({
   onClose,
   onStartWorkout,
   onCompleteWorkout,
+  onEditWorkout,
+  onRemoveWorkout,
   isLibraryWorkout = false,
-  selectedDate
+  selectedDate = null,
+  showCoachActions = false
 }: WorkoutDetailModalProps) {
   const { t } = useTranslation();
   const [workoutDetails, setWorkoutDetails] = useState<WorkoutLibrary | null>(null);
@@ -128,6 +146,32 @@ export default function WorkoutDetailModal({
   const handleCompleteClick = () => {
     onCompleteWorkout(workout);
     onClose();
+  };
+
+  const handleEditClick = () => {
+    if (onEditWorkout) {
+      onEditWorkout(workout);
+    }
+    onClose();
+  };
+
+  const handleRemoveClick = async () => {
+    if (!onRemoveWorkout) return;
+    
+    // Show confirmation dialog
+    const confirmRemove = window.confirm(
+      `Are you sure you want to remove "${workout.name}" workout? This action cannot be undone and will also remove it from intervals.icu if synced.`
+    );
+    
+    if (confirmRemove) {
+      try {
+        await onRemoveWorkout(workout);
+        onClose();
+      } catch (error) {
+        console.error('Error removing workout:', error);
+        alert('Failed to remove workout. Please try again.');
+      }
+    }
   };
 
   // Calculate total duration
@@ -263,6 +307,24 @@ export default function WorkoutDetailModal({
                 >
                   📅 Select Date First
                 </button>
+              ) : showCoachActions ? (
+                <>
+                  <button
+                    onClick={handleEditClick}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors"
+                  >
+                    <EditIcon />
+                    Edit
+                  </button>
+                  
+                  <button
+                    onClick={handleRemoveClick}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors"
+                  >
+                    <TrashIcon />
+                    Remove
+                  </button>
+                </>
               ) : (
                 <>
                   {workout.status === 'assigned' && (

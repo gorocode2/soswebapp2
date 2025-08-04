@@ -1,1 +1,1 @@
-export { default as WorkoutDetailModal } from './WorkoutDetailModal';
+// Components exports - add new shared components here

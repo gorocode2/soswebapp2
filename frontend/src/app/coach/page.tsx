@@ -10,7 +10,9 @@ import AthleteSelector from './components/AthleteSelector';
 import WorkoutCalendar from './components/WorkoutCalendar';
 import AthleteProfile from './components/AthleteProfile';
 import WorkoutLibrary from './components/WorkoutLibrary';
+import WorkoutDetailModal from '../components/WorkoutDetailModal';
 import workoutService from '@/services/workoutService';
+import { CalendarWorkout } from '@/types/workout';
 
 // Type for workout from the library (matching WorkoutLibrary component interface)
 interface WorkoutFromLibrary {
@@ -79,6 +81,10 @@ export default function CoachPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
   const [isWorkoutLibraryOpen, setIsWorkoutLibraryOpen] = useState(false);
+  
+  // Modal state for workout details
+  const [selectedWorkout, setSelectedWorkout] = useState<CalendarWorkout | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Handle adding workout from library to calendar
   const handleAddWorkout = async (workout: WorkoutFromLibrary, date: Date) => {
@@ -262,6 +268,85 @@ export default function CoachPage() {
     }
   };
 
+  // Modal handlers for workout details
+  const handleWorkoutSelect = (workout: CalendarWorkout) => {
+    setSelectedWorkout(workout);
+    setIsModalOpen(true);
+  };
+
+  const handleWorkoutStart = async (workout: CalendarWorkout) => {
+    try {
+      // Update workout status to in_progress
+      await workoutService.updateAssignmentStatus(workout.assignment_id, 'in_progress');
+      
+      // Show success message
+      alert(`🦈 Started ${workout.name}! Let's dominate this workout! 💪`);
+      
+      // Refresh workouts
+      await handleWorkoutDeleted();
+    } catch (error) {
+      console.error('Error starting workout:', error);
+      alert('Failed to start workout. Please try again.');
+    }
+  };
+
+  const handleWorkoutComplete = async (workout: CalendarWorkout) => {
+    try {
+      // Update workout status to completed
+      await workoutService.updateAssignmentStatus(
+        workout.assignment_id, 
+        'completed',
+        'Workout completed successfully! Great job!'
+      );
+      
+      // Show success message
+      alert(`🎉 Workout completed! Your athlete crushed ${workout.name}! 🦈💪`);
+      
+      // Refresh workouts
+      await handleWorkoutDeleted();
+    } catch (error) {
+      console.error('Error completing workout:', error);
+      alert('Failed to mark workout as complete. Please try again.');
+    }
+  };
+
+  const handleWorkoutEdit = async (workout: CalendarWorkout) => {
+    // For now, just show an alert. Later this could open an edit modal
+    alert(`Edit functionality for "${workout.name}" will be implemented in a future update.`);
+  };
+
+  const handleWorkoutRemove = async (workout: CalendarWorkout) => {
+    try {
+      // Call the backend to remove the workout assignment
+      const response = await fetch(`/api/coach/workout-assignments/${workout.assignment_id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Show success message
+        alert(`🦈 Workout "${workout.name}" has been removed successfully!`);
+        
+        // Refresh workouts to reflect the deletion
+        await handleWorkoutDeleted();
+      } else {
+        throw new Error(result.message || 'Failed to remove workout');
+      }
+    } catch (error) {
+      console.error('Error removing workout:', error);
+      throw error; // Re-throw to be caught by the modal
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedWorkout(null);
+  };
+
   // Loading states
   if (isLoading) {
     return (
@@ -330,6 +415,7 @@ export default function CoachPage() {
                 isLoading={isLoadingWorkouts}
                 onAddWorkout={handleAddWorkout}
                 onWorkoutDeleted={handleWorkoutDeleted}
+                onWorkoutSelect={handleWorkoutSelect}
               />
             </div>
           </div>
@@ -363,6 +449,20 @@ export default function CoachPage() {
           }
         }}
       />
+
+      {/* Workout Detail Modal */}
+      {selectedWorkout && (
+        <WorkoutDetailModal
+          workout={selectedWorkout}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onStartWorkout={handleWorkoutStart}
+          onCompleteWorkout={handleWorkoutComplete}
+          onEditWorkout={handleWorkoutEdit}
+          onRemoveWorkout={handleWorkoutRemove}
+          showCoachActions={true}
+        />
+      )}
     </div>
   );
 }

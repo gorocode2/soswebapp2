@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/app/components/Header';
 import BottomNavigation from '@/app/components/BottomNavigation';
 import { WorkoutMonthlySchedule, WorkoutWeeklySchedule } from './components';
-import { WorkoutDetailModal } from '@/components';
+import WorkoutDetailModal from '@/app/components/WorkoutDetailModal';
 import { CalendarWorkout } from '@/types/workout';
 import workoutService from '@/services/workoutService';
 

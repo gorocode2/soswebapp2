@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { WorkoutDetailModal } from '@/components';
+import WorkoutDetailModal from '../../components/WorkoutDetailModal';
 import { CalendarWorkout } from '@/types/workout';
 import { useAuth } from '@/contexts/AuthContext';
 import workoutService from '@/services/workoutService';

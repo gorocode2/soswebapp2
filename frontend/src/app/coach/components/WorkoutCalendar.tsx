@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../../../i18n';
 import WorkoutLibrary from '../../coach/components/WorkoutLibrary';
 import { workoutService } from '../../../services/workoutService';
+import { CalendarWorkout } from '../../../types/workout';
 
 // Type for workout from the library (matching WorkoutLibrary component interface)
 interface WorkoutFromLibrary {
@@ -59,6 +60,7 @@ interface WorkoutCalendarProps {
   isLoading: boolean;
   onAddWorkout?: (workout: WorkoutFromLibrary, date: Date) => void; // New prop for adding workouts
   onWorkoutDeleted?: () => void; // Callback when workout is deleted to refresh data
+  onWorkoutSelect?: (workout: CalendarWorkout) => void; // Callback when workout is clicked for details
 }
 
 export default function WorkoutCalendar({
@@ -69,10 +71,36 @@ export default function WorkoutCalendar({
   onViewModeChange: _onViewModeChange,
   isLoading,
   onAddWorkout,
-  onWorkoutDeleted
+  onWorkoutDeleted,
+  onWorkoutSelect
 }: WorkoutCalendarProps) {
   const { t } = useLanguage();
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutSession | null>(null);
+
+  // Convert WorkoutSession to CalendarWorkout for modal compatibility
+  const convertToCalendarWorkout = (workout: WorkoutSession): CalendarWorkout => {
+    // Convert status mapping
+    const statusMap: Record<string, CalendarWorkout['status']> = {
+      'planned': 'assigned',
+      'in_progress': 'in_progress',
+      'completed': 'completed',
+      'missed': 'cancelled',
+      'skipped': 'skipped'
+    };
+
+    return {
+      id: workout.id,
+      assignment_id: workout.assignment_id,
+      date: typeof workout.date === 'string' ? workout.date : workout.date.toISOString().split('T')[0],
+      name: workout.name,
+      type: workout.type,
+      status: statusMap[workout.status] || 'assigned',
+      duration: workout.duration || 0,
+      difficulty: 5, // Default difficulty if not provided
+      priority: 'normal', // Default priority if not provided
+      notes: workout.coachNotes || workout.notes || undefined
+    };
+  };
   const [isWorkoutLibraryOpen, setIsWorkoutLibraryOpen] = useState(false);
   const [selectedDateForWorkout, setSelectedDateForWorkout] = useState<Date | null>(null);
 
@@ -136,6 +164,19 @@ export default function WorkoutCalendar({
       case 'missed': return 'bg-red-500 text-white';
       case 'skipped': return 'bg-gray-500 text-white';
       default: return 'bg-gray-500 text-white';
+    }
+  };
+
+  // Get workout status color for calendar dots (matching workout page style)
+  const getWorkoutStatusColor = (status: string): string => {
+    switch (status) {
+      case 'completed': return 'bg-emerald-500';
+      case 'in_progress': return 'bg-blue-500';
+      case 'started': return 'bg-blue-500';
+      case 'planned': return 'bg-cyan-500';
+      case 'missed': return 'bg-red-500';
+      case 'skipped': return 'bg-gray-500';
+      default: return 'bg-cyan-500';
     }
   };
 
@@ -304,7 +345,7 @@ export default function WorkoutCalendar({
   }
 
   return (
-    <div className="bg-slate-800/50 rounded-xl border border-[#314d68] p-6">
+    <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
       {/* Calendar Navigation */}
       <div className="flex items-center justify-between mb-6">
         <button
@@ -313,17 +354,24 @@ export default function WorkoutCalendar({
             newDate.setMonth(newDate.getMonth() - 1);
             onDateSelect(newDate);
           }}
-          className="p-2 text-[#94a3b8] hover:text-white transition-colors duration-200"
+          className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-700 hover:bg-slate-600 text-cyan-400 transition-colors"
         >
-          ← {t('common.previous')}
+          <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+            <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path>
+          </svg>
         </button>
         
-        <h4 className="text-white text-lg font-semibold">
-          {selectedDate.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long' 
-          })}
-        </h4>
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-white">
+            {selectedDate.toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long' 
+            })}
+          </h2>
+          <p className="text-sm text-slate-400">
+            {workouts.length} workouts scheduled
+          </p>
+        </div>
         
         <button
           onClick={() => {
@@ -331,66 +379,98 @@ export default function WorkoutCalendar({
             newDate.setMonth(newDate.getMonth() + 1);
             onDateSelect(newDate);
           }}
-          className="p-2 text-[#94a3b8] hover:text-white transition-colors duration-200"
+          className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-700 hover:bg-slate-600 text-cyan-400 transition-colors"
         >
-          {t('common.next')} →
+          <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+            <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+          </svg>
         </button>
       </div>
 
       {/* Month View */}
       {viewMode === 'month' && (
         <>
-          {/* Week days header */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-              <div key={day} className="text-center text-[#94a3b8] text-sm font-medium py-2">
+          {/* Days of week header */}
+          <div className="grid grid-cols-7 gap-2 mb-4">
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
+              <div key={`day-header-${index}`} className="text-center text-sm font-semibold text-slate-400 py-2">
                 {day}
               </div>
             ))}
           </div>
-          
+
           {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-2">
             {generateCalendarDays().map((date, index) => {
               const dayWorkouts = getWorkoutsForDate(date);
               const isCurrentMonth = isSameMonth(date);
               const isTodayDate = isToday(date);
+              const hasWorkouts = dayWorkouts.length > 0;
               
               return (
                 <button
                   key={index}
                   onClick={() => onDateSelect(date)}
                   className={`
-                    relative p-2 min-h-[80px] border border-slate-700/50 rounded-lg transition-all duration-200
-                    ${isCurrentMonth ? 'bg-slate-700/30 hover:bg-slate-700/50' : 'bg-slate-800/20'}
-                    ${isTodayDate ? 'ring-2 ring-blue-500' : ''}
+                    aspect-square relative p-1 text-sm font-medium rounded-lg transition-all duration-200
+                    ${hasWorkouts && isCurrentMonth
+                      ? 'bg-slate-700 hover:bg-slate-600 text-white border border-cyan-500/50' 
+                      : isCurrentMonth
+                        ? 'bg-slate-800/50 hover:bg-slate-700/50 text-slate-400'
+                        : 'bg-slate-800/20 text-slate-600'
+                    }
+                    ${isTodayDate ? 'ring-2 ring-cyan-400' : ''}
+                    ${hasWorkouts && isCurrentMonth ? 'hover:scale-105' : ''}
                   `}
                 >
-                  <div className={`text-sm font-medium mb-1 ${
-                    isCurrentMonth ? 'text-white' : 'text-[#94a3b8]'
-                  }`}>
-                    {date.getDate()}
-                  </div>
+                  <span className="block mb-1">{date.getDate()}</span>
                   
                   {/* Workout indicators */}
-                  <div className="space-y-1">
-                    {dayWorkouts.slice(0, 2).map((workout) => (
-                      <div
-                        key={workout.id}
-                        className={`text-xs px-1 py-0.5 rounded text-center ${getStatusColor(workout.status)}`}
-                      >
-                        {getStatusIcon(workout.status)}
-                      </div>
-                    ))}
-                    {dayWorkouts.length > 2 && (
-                      <div className="text-xs text-[#94a3b8]">
-                        +{dayWorkouts.length - 2}
-                      </div>
-                    )}
-                  </div>
+                  {hasWorkouts && isCurrentMonth && (
+                    <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-1">
+                      {dayWorkouts.slice(0, 3).map((workout) => (
+                        <div
+                          key={workout.id}
+                          className={`
+                            w-2 h-2 rounded-full
+                            ${getWorkoutStatusColor(workout.status)}
+                            ring-1 ring-cyan-400/50
+                          `}
+                          title={`${workout.name} (${workout.type})`}
+                        />
+                      ))}
+                      {dayWorkouts.length > 3 && (
+                        <div className="w-2 h-2 rounded-full bg-slate-500 text-[8px] flex items-center justify-center text-white">
+                          +
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </button>
               );
             })}
+          </div>
+
+          {/* Legend */}
+          <div className="mt-4 pt-4 border-t border-slate-700">
+            <div className="flex flex-wrap gap-4 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                <span className="text-slate-400">Completed</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                <span className="text-slate-400">In Progress</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-cyan-500"></div>
+                <span className="text-slate-400">Planned</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-gray-500"></div>
+                <span className="text-slate-400">Missed/Skipped</span>
+              </div>
+            </div>
           </div>
         </>
       )}
@@ -436,7 +516,13 @@ export default function WorkoutCalendar({
                         <div
                           key={workout.id}
                           className={`flex items-start gap-2 p-2 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.02] ${getWorkoutTypeColor(workout.type)}`}
-                          onClick={() => setSelectedWorkout(workout)}
+                          onClick={() => {
+                            if (onWorkoutSelect) {
+                              onWorkoutSelect(convertToCalendarWorkout(workout));
+                            } else {
+                              setSelectedWorkout(workout);
+                            }
+                          }}
                           title={`${workout.name} - ${workout.duration ? workout.duration + ' min' : ''}`}
                         >
                           <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5 ${getStatusColor(workout.status)}`}>
@@ -506,7 +592,13 @@ export default function WorkoutCalendar({
               <div
                 key={workout.id}
                 className={`bg-slate-700/50 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/70 transition-all duration-200 cursor-pointer ${getPriorityColor(workout.priority)}`}
-                onClick={() => setSelectedWorkout(workout)}
+                onClick={() => {
+                  if (onWorkoutSelect) {
+                    onWorkoutSelect(convertToCalendarWorkout(workout));
+                  } else {
+                    setSelectedWorkout(workout);
+                  }
+                }}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex-1">
