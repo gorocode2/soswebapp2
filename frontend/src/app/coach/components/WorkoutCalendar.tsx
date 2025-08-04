@@ -472,8 +472,8 @@ export default function WorkoutCalendar({
                       ))}
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center text-[#94a3b8] text-sm py-4">
-                      <span>-</span>
+                    <div className="py-2">
+                      {/* Empty space when no workouts - no dash indicator */}
                     </div>
                   )}
                 </div>

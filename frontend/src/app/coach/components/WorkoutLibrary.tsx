@@ -248,16 +248,16 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
         className="bg-slate-800 rounded-xl border border-[#314d68] w-full max-w-5xl h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header - Fixed */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <div className="flex items-center gap-4">
-            <h2 className="text-white text-2xl font-bold">🦈 Workout Library</h2>
+        {/* Header - Fixed with mobile optimization */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-slate-700 gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+            <h2 className="text-white text-xl sm:text-2xl font-bold break-words">🦈 Workout Library</h2>
             
             {/* Update Workout Button */}
             <button
               onClick={handleSyncWorkouts}
               disabled={isSyncing}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+              className={`px-3 py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                 isSyncing 
                   ? 'bg-slate-600 text-slate-400 cursor-not-allowed' 
                   : 'bg-cyan-500 hover:bg-cyan-600 text-white'
@@ -270,7 +270,7 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
           
           <button
             onClick={onClose}
-            className="p-2 text-[#94a3b8] hover:text-white transition-colors duration-200"
+            className="p-2 text-[#94a3b8] hover:text-white transition-colors duration-200 self-end sm:self-auto"
           >
             ✕
           </button>
@@ -285,11 +285,11 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
 
         {/* Scrollable Content - Everything flows together */}
         <div className="flex-1 overflow-y-auto">
-          {/* Search and Filters Section */}
-          <div className="p-6 border-b border-slate-700 bg-slate-700/20">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              {/* Search */}
-              <div className="md:col-span-1">
+          {/* Search and Filters Section - Mobile optimized */}
+          <div className="p-4 sm:p-6 border-b border-slate-700 bg-slate-700/20">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              {/* Search - Full width on mobile */}
+              <div className="sm:col-span-2 lg:col-span-1">
                 <label className="block text-white text-sm font-medium mb-2">
                   Search Workouts
                 </label>
@@ -297,8 +297,8 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by name, description, or tags..."
-                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-[#94a3b8] focus:outline-none focus:border-blue-500"
+                  placeholder="Search workouts..."
+                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-[#94a3b8] focus:outline-none focus:border-blue-500 text-sm"
                 />
               </div>
 
@@ -310,7 +310,7 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
                 <select
                   value={selectedTrainingType}
                   onChange={(e) => setSelectedTrainingType(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500 text-sm"
                 >
                   <option value="all">All Types</option>
                   <option value="zone2">Zone 2</option>
@@ -333,7 +333,7 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500 text-sm"
                 >
                   <option value="all">All Categories</option>
                   {categories.map(category => (
@@ -345,9 +345,9 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-[#94a3b8]">
+            {/* Stats - Mobile responsive */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <div className="text-sm text-[#94a3b8] break-words">
                 Showing {filteredWorkouts.length} of {workouts.length} workouts
               </div>
             </div>
@@ -365,19 +365,19 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
                   ← Back to Library
                 </button>
                 
-                <h3 className="text-white text-2xl font-bold mb-2">
+                <h3 className="text-white text-xl sm:text-2xl font-bold mb-2 break-words leading-tight">
                   {selectedWorkout.name}
                 </h3>
                 
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-4">
                   <span className={`px-3 py-1 rounded text-sm font-medium text-white ${getTrainingTypeColor(selectedWorkout.training_type)}`}>
                     {selectedWorkout.training_type.toUpperCase()}
                   </span>
-                  <span className="text-[#94a3b8]">
+                  <span className="text-[#94a3b8] text-sm sm:text-base">
                     {formatDuration(selectedWorkout.estimated_duration_minutes)}
                   </span>
                   {selectedWorkout.difficulty_level && (
-                    <span className="text-yellow-400">
+                    <span className="text-yellow-400 text-sm sm:text-base break-words">
                       {getDifficultyStars(selectedWorkout.difficulty_level)} ({selectedWorkout.difficulty_level}/10)
                     </span>
                   )}
@@ -480,21 +480,21 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
             </div>
           ) : (
             /* Workout List View */
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {isLoading ? (
                 <div className="flex items-center justify-center h-64">
-                  <div className="text-white text-lg">🦈 Loading workout library...</div>
+                  <div className="text-white text-base sm:text-lg">🦈 Loading workout library...</div>
                 </div>
               ) : filteredWorkouts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-64 text-center">
-                  <div className="text-6xl mb-4">🏃‍♂️</div>
-                  <h3 className="text-white text-xl font-semibold mb-2">No Workouts Found</h3>
-                  <p className="text-[#94a3b8] text-base">
+                <div className="flex flex-col items-center justify-center h-64 text-center px-4">
+                  <div className="text-4xl sm:text-6xl mb-4">🏃‍♂️</div>
+                  <h3 className="text-white text-lg sm:text-xl font-semibold mb-2 break-words">No Workouts Found</h3>
+                  <p className="text-[#94a3b8] text-sm sm:text-base break-words">
                     Try adjusting your filters or search terms
                   </p>
                 </div>
               ) : (
-                /* Single Column Workout Cards */
+                /* Single Column Workout Cards - Mobile Optimized */
                 <div className="space-y-4 pb-6">
                   {filteredWorkouts.map(workout => (
                     <div
@@ -503,36 +503,36 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
                         setSelectedWorkout(workout);
                         setIsDetailModalOpen(true);
                       }}
-                      className="bg-slate-700/30 border border-slate-600 rounded-lg p-6 hover:bg-slate-700/50 cursor-pointer transition-all duration-200 hover:border-blue-500/50"
+                      className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 sm:p-6 hover:bg-slate-700/50 cursor-pointer transition-all duration-200 hover:border-blue-500/50"
                     >
-                      {/* Workout Header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="text-white font-semibold text-xl mb-2">
+                      {/* Workout Header - Mobile optimized */}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
+                        <div className="flex-1 w-full sm:w-auto">
+                          <h3 className="text-white font-semibold text-lg sm:text-xl mb-2 break-words leading-tight">
                             {workout.name}
                           </h3>
-                          <div className="flex items-center gap-3 mb-3">
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium text-white ${getTrainingTypeColor(workout.training_type)}`}>
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
+                            <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium text-white whitespace-nowrap ${getTrainingTypeColor(workout.training_type)}`}>
                               {workout.training_type.toUpperCase()}
                             </span>
-                            <span className="text-[#94a3b8]">
+                            <span className="text-[#94a3b8] text-xs sm:text-sm whitespace-nowrap">
                               {formatDuration(workout.estimated_duration_minutes)}
                             </span>
                             {workout.difficulty_level && (
-                              <span className="text-yellow-400">
+                              <span className="text-yellow-400 text-xs sm:text-sm whitespace-nowrap">
                                 {getDifficultyStars(workout.difficulty_level)} ({workout.difficulty_level}/10)
                               </span>
                             )}
                           </div>
                         </div>
-                        <div className="text-blue-400 text-sm">
+                        <div className="text-blue-400 text-xs sm:text-sm whitespace-nowrap self-end sm:self-auto">
                           Click to view →
                         </div>
                       </div>
 
-                      {/* Description */}
+                      {/* Description - Mobile optimized */}
                       {workout.description && (
-                        <p className="text-[#94a3b8] mb-4 leading-relaxed">
+                        <p className="text-[#94a3b8] mb-4 leading-relaxed text-sm sm:text-base break-words">
                           {workout.description}
                         </p>
                       )}
@@ -556,22 +556,27 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
                         </div>
                       )}
 
-                      {/* Controls and Creator */}
-                      <div className="flex items-center justify-between text-sm text-[#94a3b8] pt-3 border-t border-slate-600">
-                        <div>
-                          Primary: {workout.primary_control_parameter.toUpperCase()}
+                      {/* Controls and Creator - Mobile optimized */}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs sm:text-sm text-[#94a3b8] pt-3 border-t border-slate-600 gap-2">
+                        <div className="break-words">
+                          Primary: <span className="uppercase">{workout.primary_control_parameter}</span>
                           {workout.secondary_control_parameter && (
-                            <span> | Secondary: {workout.secondary_control_parameter.toUpperCase()}</span>
+                            <span className="block sm:inline"> 
+                              <span className="hidden sm:inline"> | </span>
+                              <span className="sm:hidden">Secondary: </span>
+                              <span className="hidden sm:inline">Secondary: </span>
+                              <span className="uppercase">{workout.secondary_control_parameter}</span>
+                            </span>
                           )}
                         </div>
-                        <div>
+                        <div className="whitespace-nowrap">
                           {workout.creator && (
                             <span>by {workout.creator.username}</span>
                           )}
                         </div>
                       </div>
 
-                      {/* Add to Calendar Button (when date is selected) */}
+                      {/* Add to Calendar Button (when date is selected) - Mobile optimized */}
                       {selectedDate && onSelectWorkout && (
                         <div className="mt-4 pt-3 border-t border-slate-600">
                           <button
@@ -579,9 +584,11 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
                               e.stopPropagation();
                               onSelectWorkout(workout);
                             }}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
                           >
-                            📅 Add to Calendar ({selectedDate.toLocaleDateString('en-US', { 
+                            <span className="hidden sm:inline">📅 Add to Calendar (</span>
+                            <span className="sm:hidden">📅 Add (</span>
+                            {selectedDate.toLocaleDateString('en-US', { 
                               month: 'short', 
                               day: 'numeric',
                               weekday: 'short'
