@@ -468,9 +468,8 @@ export default function WorkoutCalendar({
                       ))}
                     </div>
                   ) : (
-                    <div className="flex items-center text-[#94a3b8] text-sm">
-                      <span className="text-lg mr-2">📝</span>
-                      <span>No workouts scheduled</span>
+                    <div className="flex items-center justify-center text-[#94a3b8] text-sm">
+                      <span>-</span>
                     </div>
                   )}
                 </div>

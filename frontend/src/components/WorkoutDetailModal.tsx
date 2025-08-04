@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { CalendarWorkout } from '@/types/workout';
 import { WorkoutLibraryDetailResponse, WorkoutLibrary } from '@/models/types';
 import workoutService from '@/services/workoutService';
-import WorkoutStructureGraph from './WorkoutStructureGraph';
+import WorkoutStructureGraph from '@/app/workout/components/WorkoutStructureGraph';
 import { useTranslation } from '@/i18n';
 
 // SVG Icon Components

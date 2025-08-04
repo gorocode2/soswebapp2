@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import WorkoutDetailModal from '../../components/WorkoutDetailModal';
+import { WorkoutDetailModal } from '@/components';
 import { CalendarWorkout } from '@/types/workout';
 
 interface WorkoutLibrary {

@@ -4,9 +4,8 @@ import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/app/components/Header';
 import BottomNavigation from '@/app/components/BottomNavigation';
-import WorkoutMonthlySchedule from '@/app/components/WorkoutMonthlySchedule';
-import WorkoutWeeklySchedule from '@/app/components/WorkoutWeeklySchedule';
-import WorkoutDetailModal from '@/app/components/WorkoutDetailModal';
+import { WorkoutMonthlySchedule, WorkoutWeeklySchedule } from './components';
+import { WorkoutDetailModal } from '@/components';
 import { CalendarWorkout } from '@/types/workout';
 import workoutService from '@/services/workoutService';
 
