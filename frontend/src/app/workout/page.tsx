@@ -45,7 +45,6 @@ export default function WorkoutPage() {
   };
 
   const handleDateSelect = (date: number, workouts: CalendarWorkout[]) => {
-    console.log('Selected date:', date, 'with workouts:', workouts);
     if (workouts.length > 0) {
       setSelectedWorkout(workouts[0]); // Show first workout
       setIsModalOpen(true);
@@ -61,7 +60,6 @@ export default function WorkoutPage() {
     try {
       // Update workout status to in_progress
       await workoutService.updateAssignmentStatus(workout.assignment_id, 'in_progress');
-      console.log('🚀 Started workout:', workout.name);
       
       // You could redirect to a workout execution page here
       // router.push(`/workout/execute/${workout.assignment_id}`);
@@ -82,7 +80,6 @@ export default function WorkoutPage() {
         'completed',
         'Workout completed successfully! Great job!'
       );
-      console.log('✅ Completed workout:', workout.name);
       
       // Show success message
       alert(`🎉 Workout completed! You crushed ${workout.name}! 🦈💪`);

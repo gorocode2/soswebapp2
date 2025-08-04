@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../server';
+import { intervalsIcuService } from '../services/intervalsIcuService';
 import { 
   WorkoutLibrary, 
   WorkoutSegment, 
@@ -356,6 +357,63 @@ router.post('/assignments', async (req: Request, res: Response) => {
   try {
     const assignmentData: CreateWorkoutAssignmentRequest = req.body;
     
+    console.log('🔍 Assignment request received:', {
+      workout_library_id: assignmentData.workout_library_id,
+      assigned_to_user_id: assignmentData.assigned_to_user_id,
+      assigned_by_user_id: assignmentData.assigned_by_user_id,
+      scheduled_date: assignmentData.scheduled_date
+    });
+    
+    // Get workout details for intervals.icu sync
+    const workoutResult = await db.query(`
+      SELECT name, workout_description, training_type 
+      FROM workout_library 
+      WHERE id = $1
+    `, [assignmentData.workout_library_id]);
+    
+    if (workoutResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Workout not found'
+      });
+    }
+    
+    // Get athlete's intervals.icu ID
+    const athleteResult = await db.query(`
+      SELECT intervals_icu_id 
+      FROM users 
+      WHERE id = $1
+    `, [assignmentData.assigned_to_user_id]);
+    
+    if (athleteResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Athlete not found'
+      });
+    }
+    
+    const workout = workoutResult.rows[0];
+    const athleteIntervalsIcuId = athleteResult.rows[0].intervals_icu_id;
+    
+    // Check if the assigned_by_user_id exists in the database
+    let assignedByUserId = req.body.assigned_by_user_id;
+    const coachCheckResult = await db.query('SELECT id FROM users WHERE id = $1', [assignedByUserId]);
+    
+    if (coachCheckResult.rows.length === 0) {
+      console.warn(`⚠️ User ID ${assignedByUserId} not found, using first available user as coach`);
+      const firstUserResult = await db.query('SELECT id FROM users ORDER BY id LIMIT 1');
+      if (firstUserResult.rows.length > 0) {
+        assignedByUserId = firstUserResult.rows[0].id;
+        console.log(`🔄 Using user ID ${assignedByUserId} as coach`);
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: 'No valid users found in the system'
+        });
+      }
+    }
+    
+    // Create assignment in database
     const result = await db.query(`
       INSERT INTO workout_assignments (
         workout_library_id, assigned_to_user_id, assigned_by_user_id,
@@ -366,7 +424,7 @@ router.post('/assignments', async (req: Request, res: Response) => {
     `, [
       assignmentData.workout_library_id,
       assignmentData.assigned_to_user_id,
-      req.body.assigned_by_user_id, // Should come from auth middleware
+      assignedByUserId, // Use the validated user ID
       assignmentData.scheduled_date,
       assignmentData.priority || 'normal',
       assignmentData.intensity_adjustment || 1.0,
@@ -374,9 +432,47 @@ router.post('/assignments', async (req: Request, res: Response) => {
       assignmentData.custom_notes
     ]);
     
+    const assignmentId = result.rows[0].id;
+    
+    // Sync with intervals.icu if configured and athlete has intervals.icu ID
+    let intervalsIcuResult = null;
+    if (intervalsIcuService.isConfigured() && athleteIntervalsIcuId) {
+      console.log('🦈 Syncing workout with intervals.icu for athlete:', athleteIntervalsIcuId);
+      
+      intervalsIcuResult = await intervalsIcuService.addWorkout(athleteIntervalsIcuId, {
+        name: workout.name,
+        description: workout.workout_description || workout.name,
+        date: assignmentData.scheduled_date,
+        type: 'Ride' // Default to Ride, could be made configurable
+      });
+      
+      // If workout was successfully added to intervals.icu, store the event ID directly
+      if (intervalsIcuResult.success && intervalsIcuResult.intervalId) {
+        // Update assignment with the event ID returned from intervals.icu
+        await db.query(`
+          UPDATE workout_assignments 
+          SET intervals_icu_event_id = $1 
+          WHERE id = $2
+        `, [intervalsIcuResult.intervalId, assignmentId]);
+        
+        console.log('🦈 Workout synced with intervals.icu event ID:', intervalsIcuResult.intervalId);
+      } else {
+        console.warn('🦈 Failed to sync with intervals.icu:', intervalsIcuResult.message);
+      }
+    } else if (!athleteIntervalsIcuId) {
+      console.log('🦈 Athlete does not have intervals.icu ID configured, skipping sync');
+      intervalsIcuResult = {
+        success: false,
+        message: 'Athlete does not have intervals.icu ID configured'
+      };
+    } else {
+      console.log('🦈 Intervals.icu service not configured, skipping sync');
+    }
+    
     res.status(201).json({
       success: true,
-      assignment_id: result.rows[0].id,
+      assignment_id: assignmentId,
+      intervals_icu_sync: intervalsIcuResult,
       message: '🦈 Workout assigned successfully - let the training begin! ⚡'
     });
     
@@ -739,6 +835,77 @@ router.post('/executions', async (req: Request, res: Response) => {
     res.status(500).json({ 
       success: false, 
       error: 'Failed to record workout execution' 
+    });
+  }
+});
+
+// Delete workout assignment
+router.delete('/assignments/:id', async (req: Request, res: Response) => {
+  try {
+    const assignmentId = parseInt(req.params.id);
+    
+    if (isNaN(assignmentId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid assignment ID'
+      });
+    }
+    
+    // Get assignment details including intervals.icu event ID and athlete info
+    const assignmentResult = await db.query(`
+      SELECT 
+        wa.intervals_icu_event_id,
+        u.intervals_icu_id as athlete_intervals_icu_id,
+        wl.name as workout_name
+      FROM workout_assignments wa
+      JOIN users u ON wa.assigned_to_user_id = u.id
+      JOIN workout_library wl ON wa.workout_library_id = wl.id
+      WHERE wa.id = $1
+    `, [assignmentId]);
+    
+    if (assignmentResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Workout assignment not found'
+      });
+    }
+    
+    const assignment = assignmentResult.rows[0];
+    let intervalsIcuResult = null;
+    
+    // Delete from intervals.icu if event ID exists and service is configured
+    if (assignment.intervals_icu_event_id && assignment.athlete_intervals_icu_id && intervalsIcuService.isConfigured()) {
+      console.log('🦈 Deleting workout from intervals.icu:', assignment.intervals_icu_event_id);
+      
+      intervalsIcuResult = await intervalsIcuService.deleteWorkout(
+        assignment.athlete_intervals_icu_id,
+        assignment.intervals_icu_event_id
+      );
+      
+      if (intervalsIcuResult.success) {
+        console.log('🦈 Successfully deleted workout from intervals.icu');
+      } else {
+        console.warn('🦈 Failed to delete workout from intervals.icu:', intervalsIcuResult.message);
+      }
+    } else {
+      console.log('🦈 No intervals.icu event ID found or service not configured, skipping external deletion');
+    }
+    
+    // Delete assignment from database
+    await db.query('DELETE FROM workout_assignments WHERE id = $1', [assignmentId]);
+    
+    res.json({
+      success: true,
+      message: '🦈 Workout assignment deleted successfully',
+      intervals_icu_deletion: intervalsIcuResult,
+      workout_name: assignment.workout_name
+    });
+    
+  } catch (error) {
+    console.error('Error deleting workout assignment:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to delete workout assignment' 
     });
   }
 });

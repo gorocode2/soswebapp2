@@ -44,7 +44,7 @@ function WorkoutWeeklySchedule({
   onWorkoutSelect,
   onWorkoutStart
 }: WorkoutWeeklyScheduleProps) {
-  console.log('🦈 WorkoutWeeklySchedule component rendered', { userId, currentWeekStart: currentWeekStart.toISOString().split('T')[0] });
+  console.log('🦈 WorkoutWeeklySchedule loaded for user:', userId);
   
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,20 +63,16 @@ function WorkoutWeeklySchedule({
     
     const loadWeeklyPlan = async () => {
       try {
-        console.log('🦈 Loading weekly plan for user:', userId, 'week start:', weekStart.toISOString().split('T')[0]);
-        
         // Clear cache to ensure fresh data with timezone conversion
         workoutService.clearCache();
         
         setLoading(true);
         setError(null);
         const plan = await workoutService.getWeeklyPlan(userId, weekStart);
-        console.log('🦈 Received weekly plan:', plan);
         
         // Only update state if component is still mounted
         if (isMounted) {
           setWeeklyPlan(plan);
-          console.log('🦈 Weekly plan state updated:', plan?.workouts?.length, 'workouts');
         }
       } catch (err) {
         console.error('🦈 Error loading weekly plan:', err);
@@ -85,7 +81,6 @@ function WorkoutWeeklySchedule({
         }
       } finally {
         if (isMounted) {
-          console.log('🦈 Setting loading to false');
           setLoading(false);
         }
       }

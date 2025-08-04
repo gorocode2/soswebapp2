@@ -550,13 +550,23 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
           }}
           isLibraryWorkout={true}
           selectedDate={selectedDate}
-          onStartWorkout={() => {
-            // Show add to calendar action instead
+          onStartWorkout={async () => {
+            // Add workout to calendar with intervals.icu sync
             if (selectedDate && onSelectWorkout && selectedWorkout) {
-              onSelectWorkout(selectedWorkout);
-              setIsDetailModalOpen(false);
-              setSelectedWorkout(null);
-              onClose();
+              try {
+                // Show loading state
+                alert('Adding workout to calendar...');
+                
+                // Call the parent's onSelectWorkout which should handle assignment creation
+                await onSelectWorkout(selectedWorkout);
+                
+                setIsDetailModalOpen(false);
+                setSelectedWorkout(null);
+                onClose();
+              } catch (error) {
+                console.error('Error adding workout to calendar:', error);
+                alert('Failed to add workout to calendar. Please try again.');
+              }
             } else {
               alert('Select a date in the calendar first to add this workout!');
             }

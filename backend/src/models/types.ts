@@ -702,6 +702,7 @@ export interface UpdateWorkoutLibraryRequest extends Partial<CreateWorkoutLibrar
 export interface CreateWorkoutAssignmentRequest {
   workout_library_id: number;
   assigned_to_user_id: number;
+  assigned_by_user_id: number; // Coach/user who assigns the workout
   scheduled_date: string;
   priority?: AssignmentPriority;
   intensity_adjustment?: number;

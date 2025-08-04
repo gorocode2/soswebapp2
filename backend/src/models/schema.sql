@@ -228,6 +228,9 @@ CREATE TABLE IF NOT EXISTS workout_assignments (
     athlete_feedback TEXT,
     coach_review TEXT,
     
+    -- External platform integration
+    intervals_icu_event_id VARCHAR(255), -- Intervals.icu event ID for syncing
+    
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     

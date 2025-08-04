@@ -102,6 +102,7 @@ router.get('/athletes/:athleteId/workouts', async (req, res) => {
         wa.completed_at,
         wa.athlete_feedback,
         wa.coach_review,
+        wa.intervals_icu_event_id,
         wa.created_at,
         wa.updated_at,
         
@@ -154,6 +155,7 @@ router.get('/athletes/:athleteId/workouts', async (req, res) => {
       
       return {
         id: row.id,
+        assignment_id: row.id, // Add assignment_id for deletion functionality
         date: dateString,
         name: row.workout_name,
         type: row.training_type || 'endurance',
@@ -172,6 +174,7 @@ router.get('/athletes/:athleteId/workouts', async (req, res) => {
         description: row.workout_description,
         difficultyLevel: row.difficulty_level,
         controlParameter: row.primary_control_parameter,
+        intervals_icu_event_id: row.intervals_icu_event_id, // Add for intervals.icu tracking
         coachInfo: {
           username: row.coach_username,
           firstName: row.coach_first_name,

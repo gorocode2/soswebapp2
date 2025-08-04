@@ -13,7 +13,6 @@ export const debugAPI = {
       console.log('🔒 Forced HTTPS for production:', url);
     }
     
-    console.log('🔍 Frontend using API URL:', url);
     return url;
   },
 

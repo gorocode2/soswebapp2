@@ -51,6 +51,7 @@ interface Athlete {
 
 interface WorkoutSession {
   id: number;
+  assignment_id: number; // For deletion functionality
   date: string;
   name: string;
   type: 'threshold' | 'vo2max' | 'endurance' | 'sprint' | 'recovery';
@@ -62,6 +63,7 @@ interface WorkoutSession {
   actualHeartRate?: number;
   notes?: string;
   coachNotes?: string;
+  intervals_icu_event_id?: string; // For intervals.icu tracking
 }
 
 export default function CoachPage() {
@@ -104,25 +106,49 @@ export default function CoachPage() {
         scheduled_date: scheduledDate,
       };
 
-      console.log('Creating workout assignment:', assignmentRequest);
-      console.log('Selected date:', date);
-      console.log('Formatted scheduled_date:', scheduledDate);
+      console.log('🔍 Creating workout assignment:', assignmentRequest);
+      console.log('🔍 Current user:', user);
+      console.log('🔍 Selected athlete:', selectedAthlete);
+      console.log('🔍 Selected date:', date);
+      console.log('🔍 Formatted scheduled_date:', scheduledDate);
       
       // Save to database via API
       const response = await workoutService.createAssignment(assignmentRequest);
       
       console.log('✅ Workout assignment created:', response);
       
+      // Check intervals.icu sync status
+      if (response.intervals_icu_sync) {
+        if (response.intervals_icu_sync.success) {
+          console.log('🦈 Workout synced with intervals.icu:', response.intervals_icu_sync.intervalId);
+          alert(`Workout assigned successfully!\n\n✅ Synced with ${selectedAthlete.firstName || selectedAthlete.username}'s intervals.icu (ID: ${response.intervals_icu_sync.intervalId})`);
+        } else {
+          const message = response.intervals_icu_sync.message;
+          console.warn('⚠️ intervals.icu sync failed:', message);
+          
+          if (message.includes('does not have intervals.icu ID')) {
+            alert(`Workout assigned successfully!\n\n⚠️ ${selectedAthlete.firstName || selectedAthlete.username} doesn't have intervals.icu configured. Ask them to add their intervals.icu ID to their profile.`);
+          } else {
+            alert(`Workout assigned successfully!\n\n⚠️ intervals.icu sync failed: ${message}`);
+          }
+        }
+      } else {
+        console.log('🦈 Workout assigned (no intervals.icu sync configured)');
+        alert('Workout assigned successfully!');
+      }
+      
       // Create local workout session for immediate UI feedback
       const newWorkout: WorkoutSession = {
         id: response.assignment_id,
+        assignment_id: response.assignment_id,
         date: scheduledDate,
         name: workout.name,
         type: 'endurance', // Default type, should be mapped from workout.training_type
         status: 'planned',
         duration: workout.estimated_duration_minutes,
         notes: workout.description || '',
-        coachNotes: `Added from library: ${workout.name}`
+        coachNotes: `Added from library: ${workout.name}`,
+        intervals_icu_event_id: response.intervals_icu_sync?.intervalId || undefined
       };
 
       // Add to local state for immediate UI feedback
@@ -154,13 +180,12 @@ export default function CoachPage() {
         const result = await response.json();
         
         if (result.success) {
-          console.log('✅ Loaded athletes from database:', result.data);
+          console.log('✅ Loaded athletes:', result.data.length);
           setAthletes(result.data);
           
           // Auto-select athlete ID 33 for testing (where we created the test workout)
           if (result.data.length > 0) {
             const testAthlete = result.data.find((athlete: Athlete) => athlete.id === 33) || result.data[0];
-            console.log('🦈 Auto-selecting athlete for testing:', testAthlete, '(looking for ID 33)');
             setSelectedAthlete(testAthlete);
           }
         } else {
@@ -182,18 +207,12 @@ export default function CoachPage() {
   useEffect(() => {
     const loadWorkouts = async (athleteId: number) => {
       try {
-        console.log('🔍 Loading workouts for athlete ID:', athleteId);
         setIsLoadingWorkouts(true);
         const response = await fetch(`/api/coach/athletes/${athleteId}/workouts`);
         const result = await response.json();
         
         if (result.success) {
-          console.log('✅ Loaded workouts from database:', result.data);
-          console.log('🔍 Number of workouts loaded:', result.data.length);
-          // Add detailed logging for each workout date
-          result.data.forEach((workout: WorkoutSession, index: number) => {
-            console.log(`🗓️ Coach page workout ${index + 1}: "${workout.name}" on ${workout.date} (${typeof workout.date})`);
-          });
+          console.log('✅ Loaded workouts:', result.data.length);
           setWorkouts(result.data);
         } else {
           console.error('❌ Failed to load workouts:', result.message);
@@ -208,12 +227,34 @@ export default function CoachPage() {
     };
 
     if (selectedAthlete) {
-      console.log('🦈 Selected athlete:', selectedAthlete);
       loadWorkouts(selectedAthlete.id);
     } else {
       setWorkouts([]);
     }
   }, [selectedAthlete]);
+
+  // Handle workout deletion and refresh data
+  const handleWorkoutDeleted = async () => {
+    if (selectedAthlete) {
+      // Reload workouts to reflect the deletion
+      try {
+        setIsLoadingWorkouts(true);
+        const response = await fetch(`/api/coach/athletes/${selectedAthlete.id}/workouts`);
+        const result = await response.json();
+        
+        if (result.success) {
+          console.log('✅ Refreshed workouts after deletion:', result.data.length);
+          setWorkouts(result.data);
+        } else {
+          console.error('❌ Failed to refresh workouts:', result.message);
+        }
+      } catch (error) {
+        console.error('❌ Error refreshing workouts:', error);
+      } finally {
+        setIsLoadingWorkouts(false);
+      }
+    }
+  };
 
   // Loading states
   if (isLoading) {
@@ -282,6 +323,7 @@ export default function CoachPage() {
                 onViewModeChange={setViewMode}
                 isLoading={isLoadingWorkouts}
                 onAddWorkout={handleAddWorkout}
+                onWorkoutDeleted={handleWorkoutDeleted}
               />
             </div>
           </div>
@@ -305,6 +347,15 @@ export default function CoachPage() {
       <WorkoutLibrary
         isOpen={isWorkoutLibraryOpen}
         onClose={() => setIsWorkoutLibraryOpen(false)}
+        selectedDate={selectedDate}
+        onSelectWorkout={(workout) => {
+          if (selectedDate && selectedAthlete) {
+            handleAddWorkout(workout, selectedDate);
+            setIsWorkoutLibraryOpen(false);
+          } else {
+            alert('Please select an athlete and date first!');
+          }
+        }}
       />
     </div>
   );

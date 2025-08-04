@@ -188,11 +188,32 @@ class WorkoutService {
   }
 
   // Create a new workout assignment
-  async createAssignment(assignment: CreateWorkoutAssignmentRequest): Promise<{ assignment_id: number; message: string }> {
-    return this.fetchApi('/workout-library/assignments', {
+  async createAssignment(assignment: CreateWorkoutAssignmentRequest): Promise<{ 
+    assignment_id: number; 
+    message: string;
+    intervals_icu_sync?: {
+      success: boolean;
+      message: string;
+      intervalId?: string;
+    };
+  }> {
+    const result = await this.fetchApi<{ 
+      assignment_id: number; 
+      message: string;
+      intervals_icu_sync?: {
+        success: boolean;
+        message: string;
+        intervalId?: string;
+      };
+    }>('/workout-library/assignments', {
       method: 'POST',
       body: JSON.stringify(assignment),
     });
+    
+    // Clear cache after creating to ensure fresh data
+    this.clearCache();
+    
+    return result;
   }
 
   // Update assignment status
@@ -211,6 +232,34 @@ class WorkoutService {
     });
     
     // Clear cache after updating to ensure fresh data
+    this.clearCache();
+    
+    return result;
+  }
+
+  // Delete workout assignment
+  async deleteAssignment(assignmentId: number): Promise<{ 
+    success: boolean; 
+    message: string;
+    intervals_icu_deletion?: {
+      success: boolean;
+      message: string;
+    };
+    workout_name?: string;
+  }> {
+    const result = await this.fetchApi<{ 
+      success: boolean; 
+      message: string;
+      intervals_icu_deletion?: {
+        success: boolean;
+        message: string;
+      };
+      workout_name?: string;
+    }>(`/workout-library/assignments/${assignmentId}`, {
+      method: 'DELETE',
+    });
+    
+    // Clear cache after deleting to ensure fresh data
     this.clearCache();
     
     return result;

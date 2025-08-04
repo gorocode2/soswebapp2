@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../../../i18n';
 import WorkoutLibrary from '../../coach/components/WorkoutLibrary';
+import { workoutService } from '../../../services/workoutService';
 
 // Type for workout from the library (matching WorkoutLibrary component interface)
 interface WorkoutFromLibrary {
@@ -22,6 +23,7 @@ interface WorkoutFromLibrary {
 
 interface WorkoutSession {
   id: number;
+  assignment_id: number; // Assignment ID for deletion
   date: string | Date; // Allow both string and Date
   name: string;
   type: 'threshold' | 'vo2max' | 'endurance' | 'sprint' | 'recovery';
@@ -40,6 +42,7 @@ interface WorkoutSession {
   description?: string;
   difficultyLevel?: number;
   controlParameter?: string;
+  intervals_icu_event_id?: string; // For intervals.icu tracking
   coachInfo?: {
     username: string;
     firstName: string;
@@ -55,6 +58,7 @@ interface WorkoutCalendarProps {
   onViewModeChange: (mode: 'month' | 'week' | 'day') => void;
   isLoading: boolean;
   onAddWorkout?: (workout: WorkoutFromLibrary, date: Date) => void; // New prop for adding workouts
+  onWorkoutDeleted?: () => void; // Callback when workout is deleted to refresh data
 }
 
 export default function WorkoutCalendar({
@@ -64,7 +68,8 @@ export default function WorkoutCalendar({
   viewMode,
   onViewModeChange: _onViewModeChange,
   isLoading,
-  onAddWorkout
+  onAddWorkout,
+  onWorkoutDeleted
 }: WorkoutCalendarProps) {
   const { t } = useLanguage();
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutSession | null>(null);
@@ -73,17 +78,43 @@ export default function WorkoutCalendar({
 
   // Debug: Log workouts when they change
   React.useEffect(() => {
-    console.log('🗓️ WorkoutCalendar received workouts:', workouts);
-    console.log('📅 Current selectedDate:', selectedDate);
-    console.log('🔢 Total workouts count:', workouts.length);
-    if (workouts.length > 0) {
-      workouts.forEach((workout, index) => {
-        console.log(`📋 Workout ${index + 1}: "${workout.name}" on ${workout.date} (type: ${workout.type})`);
-      });
-    } else {
-      console.log('⚠️ No workouts found in WorkoutCalendar');
-    }
-  }, [workouts, selectedDate]);
+    console.log('🗓️ WorkoutCalendar loaded:', workouts.length, 'workouts');
+  }, [workouts]);
+
+  // Helper function to format date to YYYY-MM-DD using local timezone
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Memoize workout filtering to avoid repeated calculations
+  const workoutsByDate = useMemo(() => {
+    const workoutMap = new Map<string, WorkoutSession[]>();
+    
+    workouts.forEach(workout => {
+      let workoutDateString: string;
+      
+      // If workout.date is a Date object, format it properly
+      if (workout.date instanceof Date) {
+        workoutDateString = formatLocalDate(workout.date);
+      } else if (typeof workout.date === 'string') {
+        // If it's already a string, extract just the date part (YYYY-MM-DD)
+        workoutDateString = workout.date.split('T')[0];
+      } else {
+        // Fallback for other types
+        workoutDateString = String(workout.date);
+      }
+      
+      if (!workoutMap.has(workoutDateString)) {
+        workoutMap.set(workoutDateString, []);
+      }
+      workoutMap.get(workoutDateString)!.push(workout);
+    });
+    
+    return workoutMap;
+  }, [workouts]);
 
   const getWorkoutTypeColor = (type: string) => {
     switch (type) {
@@ -173,40 +204,15 @@ export default function WorkoutCalendar({
     return days;
   };
 
-  // Helper function to format date to YYYY-MM-DD using local timezone
-  const formatLocalDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   const getWorkoutsForDate = (date: Date) => {
     const dateString = formatLocalDate(date);
-    console.log(`🔍 getWorkoutsForDate called for: ${dateString}`);
-    console.log(`🔍 Calendar date object:`, date);
-    console.log(`🔍 Total workouts available: ${workouts.length}`);
-    
-    const filteredWorkouts = workouts.filter(workout => {
-      // The backend sends dates in YYYY-MM-DD format, use them directly
-      let workoutDateString = workout.date;
-      
-      // If workout.date is a Date object, format it properly
-      if (workout.date instanceof Date) {
-        workoutDateString = formatLocalDate(workout.date);
-      } else if (typeof workout.date === 'string') {
-        // If it's already a string, extract just the date part (YYYY-MM-DD)
-        workoutDateString = workout.date.split('T')[0];
-      }
-      
-      const matches = workoutDateString === dateString;
-      console.log(`🔍 Workout "${workout.name}" date: ${workoutDateString} vs calendar date: ${dateString} = ${matches}`);
-      return matches;
-    });
-    
-    console.log(`🔍 Found ${filteredWorkouts.length} workouts for ${dateString}`);
-    return filteredWorkouts;
+    return workoutsByDate.get(dateString) || [];
   };
+
+  // Memoize selected date workouts to avoid repeated calculations
+  const selectedDateWorkouts = useMemo(() => {
+    return getWorkoutsForDate(selectedDate);
+  }, [selectedDate, workoutsByDate]);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { 
@@ -224,6 +230,49 @@ export default function WorkoutCalendar({
 
   const isSameMonth = (date: Date) => {
     return date.getMonth() === selectedDate.getMonth();
+  };
+
+  const handleDeleteWorkout = async (workout: WorkoutSession) => {
+    if (!workout.assignment_id) {
+      alert('❌ Cannot delete workout: Assignment ID not found');
+      return;
+    }
+
+    const confirmDelete = confirm(
+      `🦈 Are you sure you want to delete "${workout.name}"?\n\nThis will remove the workout from both your platform and intervals.icu (if connected).`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const result = await workoutService.deleteAssignment(workout.assignment_id);
+      
+      if (result.success) {
+        // Show success message with intervals.icu sync status
+        let message = `✅ Workout "${result.workout_name || workout.name}" deleted successfully!`;
+        
+        if (result.intervals_icu_deletion) {
+          if (result.intervals_icu_deletion.success) {
+            message += '\n\n🦈 Also removed from intervals.icu';
+          } else {
+            message += '\n\n⚠️ Removed from platform but intervals.icu deletion failed:\n' + result.intervals_icu_deletion.message;
+          }
+        }
+        
+        alert(message);
+        
+        // Close the modal and refresh data
+        setSelectedWorkout(null);
+        if (onWorkoutDeleted) {
+          onWorkoutDeleted();
+        }
+      } else {
+        alert(`❌ Failed to delete workout: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error deleting workout:', error);
+      alert('❌ Failed to delete workout. Please try again.');
+    }
   };
 
   const handleAddWorkout = (date: Date) => {
@@ -449,8 +498,8 @@ export default function WorkoutCalendar({
             {formatDate(selectedDate)}
           </div>
           
-          {getWorkoutsForDate(selectedDate).length > 0 ? (
-            getWorkoutsForDate(selectedDate).map((workout) => (
+          {selectedDateWorkouts.length > 0 ? (
+            selectedDateWorkouts.map((workout) => (
               <div
                 key={workout.id}
                 className={`bg-slate-700/50 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/70 transition-all duration-200 cursor-pointer ${getPriorityColor(workout.priority)}`}
@@ -654,7 +703,10 @@ export default function WorkoutCalendar({
               <button className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
                 {t('coach.calendar.editWorkout')}
               </button>
-              <button className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200">
+              <button 
+                onClick={() => handleDeleteWorkout(selectedWorkout)}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200"
+              >
                 {t('coach.calendar.removeWorkout')}
               </button>
             </div>
