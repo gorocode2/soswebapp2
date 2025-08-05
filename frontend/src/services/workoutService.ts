@@ -129,7 +129,7 @@ class WorkoutService {
     this.pendingRequests.clear();
   }  // Get all workout templates
   async getWorkoutTemplates(): Promise<{ workouts: WorkoutTemplate[]; total: number }> {
-    return this.fetchApi('/workout-library/templates');
+    return this.fetchApi('/workout-library/templates?limit=1000');
   }
 
   // Get workout assignments with filters

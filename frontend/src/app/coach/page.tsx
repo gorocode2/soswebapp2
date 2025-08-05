@@ -82,6 +82,10 @@ export default function CoachPage() {
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
   const [isWorkoutLibraryOpen, setIsWorkoutLibraryOpen] = useState(false);
   
+  // Activity sync state
+  const [isSyncingActivities, setIsSyncingActivities] = useState(false);
+  const [activitySyncMessage, setActivitySyncMessage] = useState<string>('');
+  
   // Modal state for workout details
   const [selectedWorkout, setSelectedWorkout] = useState<CalendarWorkout | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -347,6 +351,46 @@ export default function CoachPage() {
     setSelectedWorkout(null);
   };
 
+  // Activity sync handler
+  const handleSyncActivities = async () => {
+    if (!selectedAthlete?.id) {
+      setActivitySyncMessage('❌ Please select an athlete first');
+      setTimeout(() => setActivitySyncMessage(''), 3000);
+      return;
+    }
+
+    setIsSyncingActivities(true);
+    setActivitySyncMessage('🦈 Syncing activities from intervals.icu...');
+
+    try {
+      const response = await fetch(`/api/activities/sync-intervals-icu/${selectedAthlete.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setActivitySyncMessage(`✅ ${result.message}`);
+        console.log('🦈 Activities synced successfully:', result);
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => setActivitySyncMessage(''), 5000);
+      } else {
+        setActivitySyncMessage(`❌ ${result.message}`);
+        setTimeout(() => setActivitySyncMessage(''), 5000);
+      }
+    } catch (error) {
+      console.error('Error syncing activities:', error);
+      setActivitySyncMessage('❌ Failed to sync activities from intervals.icu');
+      setTimeout(() => setActivitySyncMessage(''), 5000);
+    } finally {
+      setIsSyncingActivities(false);
+    }
+  };
+
   // Loading states
   if (isLoading) {
     return (
@@ -387,13 +431,36 @@ export default function CoachPage() {
 
         {/* Action Buttons */}
         <div className="mb-6">
-          <button
-            onClick={() => setIsWorkoutLibraryOpen(true)}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-          >
-            <span className="text-lg">📚</span>
-            Workout Library
-          </button>
+          <div className="flex gap-4 flex-wrap">
+            <button
+              onClick={() => setIsWorkoutLibraryOpen(true)}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+            >
+              <span className="text-lg">📚</span>
+              Workout Library
+            </button>
+
+            <button
+              onClick={handleSyncActivities}
+              disabled={isSyncingActivities || !selectedAthlete}
+              className={`px-6 py-3 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 ${
+                isSyncingActivities || !selectedAthlete
+                  ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white'
+              }`}
+              title={!selectedAthlete ? 'Select an athlete first' : 'Sync activities from intervals.icu'}
+            >
+              <span className="text-lg">🏃‍♂️</span>
+              {isSyncingActivities ? 'Syncing...' : 'Update Activities'}
+            </button>
+          </div>
+
+          {/* Activity sync message */}
+          {activitySyncMessage && (
+            <div className="mt-3 p-3 bg-slate-700/50 border border-slate-600 rounded-lg">
+              <p className="text-sm text-white">{activitySyncMessage}</p>
+            </div>
+          )}
         </div>
 
         {/* Main Content Area */}

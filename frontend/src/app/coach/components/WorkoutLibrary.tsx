@@ -120,7 +120,8 @@ export default function WorkoutLibrary({ isOpen, onClose, onSelectWorkout, selec
   const loadWorkoutLibrary = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/workout-library/templates');
+      // Request a higher limit to show all workouts in the coach interface
+      const response = await fetch('/api/workout-library/templates?limit=1000');
       const result = await response.json();
       
       if (result.success) {
