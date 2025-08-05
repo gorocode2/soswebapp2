@@ -17,6 +17,7 @@ interface Athlete {
   height?: number;
   lastActivity?: string;
   joinedDate: string;
+  intervalsIcuId?: string; // Add intervals.icu ID for activity sync
 }
 
 interface AthleteSelectorProps {

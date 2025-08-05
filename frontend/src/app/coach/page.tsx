@@ -10,6 +10,7 @@ import AthleteSelector from './components/AthleteSelector';
 import WorkoutCalendar from './components/WorkoutCalendar';
 import AthleteProfile from './components/AthleteProfile';
 import WorkoutLibrary from './components/WorkoutLibrary';
+import MonthSelectionModal from './components/MonthSelectionModal';
 import WorkoutDetailModal from '../components/WorkoutDetailModal';
 import workoutService from '@/services/workoutService';
 import { CalendarWorkout } from '@/types/workout';
@@ -49,6 +50,7 @@ interface Athlete {
   height?: number;
   lastActivity?: string;
   joinedDate: string;
+  intervalsIcuId?: string;
 }
 
 interface WorkoutSession {
@@ -85,8 +87,9 @@ export default function CoachPage() {
   // Activity sync state
   const [isSyncingActivities, setIsSyncingActivities] = useState(false);
   const [activitySyncMessage, setActivitySyncMessage] = useState<string>('');
-  
-  // Modal state for workout details
+  const [isMonthSelectionOpen, setIsMonthSelectionOpen] = useState(false);
+
+  // Modal states
   const [selectedWorkout, setSelectedWorkout] = useState<CalendarWorkout | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -351,7 +354,7 @@ export default function CoachPage() {
     setSelectedWorkout(null);
   };
 
-  // Activity sync handler
+  // Activity sync handler - opens month selection modal
   const handleSyncActivities = async () => {
     if (!selectedAthlete?.id) {
       setActivitySyncMessage('❌ Please select an athlete first');
@@ -359,15 +362,38 @@ export default function CoachPage() {
       return;
     }
 
+    // Open month selection modal
+    setIsMonthSelectionOpen(true);
+  };
+
+  // Handle month selection and perform actual sync
+  const handleMonthSelection = async (year: number, month: number) => {
+    if (!selectedAthlete?.intervalsIcuId) {
+      setActivitySyncMessage('❌ Selected athlete does not have intervals.icu ID configured');
+      setTimeout(() => setActivitySyncMessage(''), 5000);
+      return;
+    }
+
     setIsSyncingActivities(true);
-    setActivitySyncMessage('🦈 Syncing activities from intervals.icu...');
+    setActivitySyncMessage(`🦈 Syncing activities from ${getMonthName(month)} ${year}...`);
 
     try {
-      const response = await fetch(`/api/activities/sync-intervals-icu/${selectedAthlete.id}`, {
+      // Calculate date range for the selected month
+      const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+      const lastDay = new Date(year, month, 0).getDate();
+      const endDate = `${year}-${month.toString().padStart(2, '0')}-${lastDay.toString().padStart(2, '0')}`;
+
+      const response = await fetch(`/api/activities/sync-intervals-icu/${selectedAthlete.intervalsIcuId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          dateRange: {
+            oldest: startDate,
+            newest: endDate
+          }
+        }),
       });
 
       const result = await response.json();
@@ -389,6 +415,15 @@ export default function CoachPage() {
     } finally {
       setIsSyncingActivities(false);
     }
+  };
+
+  // Helper function to get month name
+  const getMonthName = (month: number): string => {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month - 1];
   };
 
   // Loading states
@@ -515,6 +550,13 @@ export default function CoachPage() {
             alert('Please select an athlete and date first!');
           }
         }}
+      />
+
+      {/* Month Selection Modal */}
+      <MonthSelectionModal
+        isOpen={isMonthSelectionOpen}
+        onClose={() => setIsMonthSelectionOpen(false)}
+        onConfirm={handleMonthSelection}
       />
 
       {/* Workout Detail Modal */}

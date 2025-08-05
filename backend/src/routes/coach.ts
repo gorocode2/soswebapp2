@@ -67,7 +67,8 @@ router.get('/athletes', async (req, res) => {
       lastActivity: null, // This would need to be calculated from sessions/workouts
       ftp: row.ftp_watts || null,
       maxHeartRate: row.max_heart_rate || null,
-      restHeartRate: null // This would need to be calculated or stored separately
+      restHeartRate: null, // This would need to be calculated or stored separately
+      intervalsIcuId: row.intervals_icu_id || null // Add intervals.icu ID for activity sync
     }));
     
     client.release();

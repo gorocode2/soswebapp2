@@ -72,7 +72,51 @@ class IntervalsIcuActivitiesService {
         };
       }
 
-      const activities = await response.json() as IntervalsIcuActivity[];
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get('content-type');
+      const contentLength = response.headers.get('content-length');
+      
+      if (contentLength === '0') {
+        console.log('✅ intervals.icu returned empty response (no activities found)');
+        return {
+          success: true,
+          activities: [],
+          count: 0,
+          message: 'No activities found for the specified date range'
+        };
+      }
+
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('❌ intervals.icu returned non-JSON response:', text);
+        return {
+          success: false,
+          message: 'intervals.icu returned invalid response format'
+        };
+      }
+
+      const responseText = await response.text();
+      if (!responseText.trim()) {
+        console.log('✅ intervals.icu returned empty JSON response (no activities found)');
+        return {
+          success: true,
+          activities: [],
+          count: 0,
+          message: 'No activities found for the specified date range'
+        };
+      }
+
+      let activities: IntervalsIcuActivity[];
+      try {
+        activities = JSON.parse(responseText) as IntervalsIcuActivity[];
+      } catch (parseError) {
+        console.error('❌ Failed to parse intervals.icu JSON response:', parseError);
+        console.error('❌ Response text:', responseText);
+        return {
+          success: false,
+          message: 'Failed to parse intervals.icu response'
+        };
+      }
       
       console.log(`✅ Successfully fetched ${activities.length} activities from intervals.icu`);
       
