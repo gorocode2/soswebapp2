@@ -268,7 +268,8 @@ export class UserService {
           description: 'Completed 100km total distance!',
           badge_color: '#FF6B35',
           points_awarded: 50,
-          is_featured: true
+          is_featured: true,
+          earned_at: new Date()
         });
         achievementsUnlocked.push(achievement);
       }
@@ -282,7 +283,8 @@ export class UserService {
           description: 'Completed 10 training sessions!',
           badge_color: '#007ACC',
           points_awarded: 25,
-          is_featured: false
+          is_featured: false,
+          earned_at: new Date()
         });
         achievementsUnlocked.push(achievement);
       }
