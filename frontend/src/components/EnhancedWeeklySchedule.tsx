@@ -85,7 +85,7 @@ export default function EnhancedWeeklySchedule({
             assignment_id: assignment.id,
             date: assignment.scheduled_date,
             name: assignment.workout_name || 'Unnamed Workout',
-            type: assignment.workout_training_type as any || 'threshold',
+            type: assignment.workout_training_type as 'threshold' | 'endurance' | 'tempo' | 'vo2max' | 'sprint' | 'recovery' || 'threshold',
             status: assignment.status === 'completed' ? 'completed' : 
                    assignment.status === 'in_progress' ? 'in_progress' :
                    assignment.status === 'cancelled' ? 'cancelled' : 'assigned',

@@ -4,6 +4,18 @@
  */
 
 // Activity type definition (matching backend types)
+export interface PowerZoneTimes {
+  [zone: string]: number;
+}
+
+export interface HeartRateZoneTimes {
+  [zone: string]: number;
+}
+
+export interface Achievements {
+  [achievement: string]: boolean | string;
+}
+
 export interface Activity {
   id: number;
   intervals_icu_id: string;
@@ -54,8 +66,8 @@ export interface Activity {
   elevation_gain?: number;
   elevation_loss?: number;
   average_altitude?: number;
-  power_zone_times?: any;
-  hr_zone_times?: any;
+  power_zone_times?: PowerZoneTimes;
+  hr_zone_times?: HeartRateZoneTimes;
   device_name?: string;
   power_meter?: string;
   power_meter_serial?: string;
@@ -69,7 +81,7 @@ export interface Activity {
   feel?: number;
   compliance?: number;
   coach_tick?: boolean;
-  achievements?: any;
+  achievements?: Achievements;
   interval_summary?: string;
   strava_id?: string;
   source: string;
