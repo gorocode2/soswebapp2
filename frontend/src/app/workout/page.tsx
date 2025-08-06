@@ -5,8 +5,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/app/components/Header';
 import BottomNavigation from '@/app/components/BottomNavigation';
 import { WorkoutMonthlySchedule, WorkoutWeeklySchedule } from './components';
+import EnhancedMonthlySchedule from '@/components/EnhancedMonthlySchedule';
+import EnhancedWeeklySchedule from '@/components/EnhancedWeeklySchedule';
 import WorkoutDetailModal from '@/app/components/WorkoutDetailModal';
+import ActivityDetailModal from '@/components/ActivityDetailModal';
 import { CalendarWorkout } from '@/types/workout';
+import { Activity } from '@/services/activitiesService';
 import workoutService from '@/services/workoutService';
 
 export default function WorkoutPage() {
@@ -15,6 +19,8 @@ export default function WorkoutPage() {
   const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
   const [selectedWorkout, setSelectedWorkout] = useState<CalendarWorkout | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
 
   // Get current user ID (defaulting to 34 for testing)
   const userId = user?.id || 34;
@@ -43,11 +49,36 @@ export default function WorkoutPage() {
     setCurrentWeekStart(newWeekStart);
   };
 
+  // Enhanced date selection for both activities and workouts
+  const handleEnhancedDateSelect = (dateOrDateNumber: Date | number, activities: Activity[], workouts: CalendarWorkout[]) => {
+    // Handle both date formats from monthly and weekly views
+    const selectedDate = typeof dateOrDateNumber === 'number' 
+      ? new Date(currentDate.getFullYear(), currentDate.getMonth(), dateOrDateNumber)
+      : dateOrDateNumber;
+    
+    // If there are activities, show the first one
+    if (activities.length > 0) {
+      setSelectedActivity(activities[0]);
+      setIsActivityModalOpen(true);
+    }
+    // Otherwise if there are workouts, show the first one
+    else if (workouts.length > 0) {
+      setSelectedWorkout(workouts[0]);
+      setIsModalOpen(true);
+    }
+  };
+
   const handleDateSelect = (date: number, workouts: CalendarWorkout[]) => {
     if (workouts.length > 0) {
       setSelectedWorkout(workouts[0]); // Show first workout
       setIsModalOpen(true);
     }
+  };
+
+  // Activity modal handlers
+  const handleActivityClose = () => {
+    setIsActivityModalOpen(false);
+    setSelectedActivity(null);
   };
 
   const handleWorkoutSelect = (workout: CalendarWorkout) => {
@@ -104,30 +135,29 @@ export default function WorkoutPage() {
         {/* Page Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-white">Training Calendar</h1>
+            <h1 className="text-2xl font-bold text-white">🦈 Training Calendar</h1>
           </div>
         </div>
 
-        {/* Monthly Schedule */}
+        {/* Enhanced Monthly Schedule */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-white mb-4">Monthly View</h2>
-          <WorkoutMonthlySchedule 
+          <EnhancedMonthlySchedule 
             userId={userId}
             currentDate={memoizedCurrentDate}
-            onDateSelect={handleDateSelect}
+            onDateSelect={handleEnhancedDateSelect}
             onMonthChange={handleMonthChange}
           />
         </div>
 
-        {/* Weekly Schedule */}
+        {/* Enhanced Weekly Schedule */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-white mb-4">Weekly View</h2>
-          <WorkoutWeeklySchedule 
+          <EnhancedWeeklySchedule 
             userId={userId}
             currentWeekStart={memoizedCurrentWeekStart}
+            onDateSelect={handleEnhancedDateSelect}
             onWeekChange={handleWeekChange}
-            onWorkoutSelect={handleWorkoutSelect}
-            onWorkoutStart={handleWorkoutStart}
           />
         </div>
 
@@ -163,6 +193,13 @@ export default function WorkoutPage() {
           onCompleteWorkout={handleWorkoutComplete}
         />
       )}
+
+      {/* Activity Detail Modal */}
+      <ActivityDetailModal
+        activity={selectedActivity}
+        isOpen={isActivityModalOpen}
+        onClose={handleActivityClose}
+      />
     </div>
   );
 }

@@ -15,20 +15,29 @@ This is a full-stack "School of Sharks" AI cycling training platform consisting 
 - **Node.js + Express** RESTful API
 - **TypeScript** for type safety
 - **PostgreSQL** database integration, database name is 'school_of_sharks'
+- **External PostgreSQL Database** - Uses external PostgreSQL server for both development and production environments
 - **Security middleware** (Helmet, CORS, etc.)
 
 ## Brand & Theme Guidelines
 - **Theme**: High-tech, energetic, shark/predator-inspired
 - **Colors**: Ocean blues, cyans, and gradients
 - **Tone**: Motivational, competitive, cutting-edge
+- **Design Focus**: Mobile-first responsive design with touch-friendly interfaces
 
 ## Development Guidelines
+
+### General Guidelines
+- **Layout Design Preservation** - Do not change existing layout designs unless explicitly requested by the user
+- **Database Operations** - Use external PostgreSQL database for all data persistence operations
 
 ### Frontend Development
 - Use TypeScript for all new files
 - Follow Next.js App Router conventions (`frontend/src/app/`)
 - Use Tailwind CSS classes for styling with blue/cyan theme
-- Implement responsive design patterns
+- **Mobile-First Responsive Design**: Always implement mobile-first layouts using Tailwind's responsive prefixes (sm:, md:, lg:, xl:)
+- **Touch-Friendly UI**: Ensure buttons and interactive elements have minimum 44px touch targets
+- **Flexible Layouts**: Use CSS Grid and Flexbox for responsive layouts that adapt to different screen sizes
+- **Typography**: Implement responsive text sizing and line heights for optimal mobile reading
 - Use Server Components by default, Client Components when needed
 - Create modern, energetic UI components with hover effects and animations
 
@@ -45,6 +54,39 @@ This is a full-stack "School of Sharks" AI cycling training platform consisting 
 - Use the TypeScript interfaces in `backend/src/models/types.ts`
 - Implement proper foreign key relationships
 - Consider performance with proper indexing
+- **External Database** - All environments use external PostgreSQL server connections
+
+## Mobile-First Design Guidelines
+
+### Core Principles
+- **Mobile-First Approach**: Design for mobile devices first, then enhance for larger screens
+- **Touch-Friendly Interface**: All interactive elements must be easily tappable on mobile devices
+- **Performance Optimized**: Fast loading times and smooth scrolling on mobile networks
+- **Accessibility**: WCAG-compliant design with proper contrast ratios and screen reader support
+
+### Mobile Layout Standards
+- **Minimum Touch Targets**: 44px minimum size for buttons and interactive elements
+- **Safe Areas**: Account for device-specific safe areas (notches, rounded corners)
+- **Spacing**: Use consistent 8px grid system with adequate padding and margins
+- **Navigation**: Implement bottom navigation for primary actions, easily reachable with thumbs
+
+### Responsive Breakpoints
+- **Mobile (Default)**: 0px - 639px (sm breakpoint)
+- **Tablet**: 640px - 767px (sm: to md:)
+- **Desktop**: 768px+ (md: and above)
+- **Large Desktop**: 1024px+ (lg: and above)
+
+### Mobile-Specific Components
+- **Bottom Navigation**: Fixed bottom navigation for primary app navigation
+- **Mobile Modals**: Full-screen or slide-up modals for mobile interactions
+- **Swipe Gestures**: Support for swipe navigation where appropriate
+- **Pull-to-Refresh**: Implement where data refreshing is needed
+
+### Performance Guidelines
+- **Image Optimization**: Use Next.js Image component with responsive sizes
+- **Lazy Loading**: Implement lazy loading for non-critical content
+- **Bundle Size**: Keep JavaScript bundles optimized for mobile networks
+- **Caching**: Implement proper caching strategies for mobile performance
 
 ## API Endpoints Structure
 Base URL: `http://localhost:5000/api`

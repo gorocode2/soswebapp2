@@ -12,7 +12,11 @@ import AthleteProfile from './components/AthleteProfile';
 import WorkoutLibrary from './components/WorkoutLibrary';
 import MonthSelectionModal from './components/MonthSelectionModal';
 import WorkoutDetailModal from '../components/WorkoutDetailModal';
+import ActivityDetailModal from '@/components/ActivityDetailModal';
+import EnhancedMonthlySchedule from '@/components/EnhancedMonthlySchedule';
+import EnhancedWeeklySchedule from '@/components/EnhancedWeeklySchedule';
 import workoutService from '@/services/workoutService';
+import activitiesService, { Activity } from '@/services/activitiesService';
 import { CalendarWorkout } from '@/types/workout';
 
 // Type for workout from the library (matching WorkoutLibrary component interface)
@@ -81,6 +85,7 @@ export default function CoachPage() {
   const [isLoadingAthletes, setIsLoadingAthletes] = useState(true);
   const [isLoadingWorkouts, setIsLoadingWorkouts] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
   const [isWorkoutLibraryOpen, setIsWorkoutLibraryOpen] = useState(false);
   
@@ -92,6 +97,8 @@ export default function CoachPage() {
   // Modal states
   const [selectedWorkout, setSelectedWorkout] = useState<CalendarWorkout | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
 
   // Handle adding workout from library to calendar
   const handleAddWorkout = async (workout: WorkoutFromLibrary, date: Date) => {
@@ -279,6 +286,59 @@ export default function CoachPage() {
   const handleWorkoutSelect = (workout: CalendarWorkout) => {
     setSelectedWorkout(workout);
     setIsModalOpen(true);
+  };
+
+  // Enhanced date selection handler for activities and workouts
+  const handleEnhancedDateSelect = (dateOrDateNumber: Date | number, activities: Activity[], workouts: CalendarWorkout[]) => {
+    // Handle both date formats from monthly and weekly views
+    let newDate: Date;
+    if (typeof dateOrDateNumber === 'number') {
+      // Monthly calendar sends date number
+      newDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), dateOrDateNumber);
+    } else {
+      // Weekly calendar sends Date object
+      newDate = dateOrDateNumber;
+    }
+    setSelectedDate(newDate);
+    
+    // If there are activities, show the first one
+    if (activities.length > 0) {
+      setSelectedActivity(activities[0]);
+      setIsActivityModalOpen(true);
+    }
+    // Otherwise if there are workouts, show the first one
+    else if (workouts.length > 0) {
+      setSelectedWorkout(workouts[0]);
+      setIsModalOpen(true);
+    }
+  };
+
+  // Month navigation handler
+  const handleMonthChange = (direction: 'prev' | 'next') => {
+    const newDate = new Date(selectedDate);
+    if (direction === 'prev') {
+      newDate.setMonth(newDate.getMonth() - 1);
+    } else {
+      newDate.setMonth(newDate.getMonth() + 1);
+    }
+    setSelectedDate(newDate);
+  };
+
+  // Week navigation handler
+  const handleWeekChange = (direction: 'prev' | 'next') => {
+    const newWeekStart = new Date(currentWeekStart);
+    if (direction === 'prev') {
+      newWeekStart.setDate(newWeekStart.getDate() - 7);
+    } else {
+      newWeekStart.setDate(newWeekStart.getDate() + 7);
+    }
+    setCurrentWeekStart(newWeekStart);
+  };
+
+  // Activity modal handlers
+  const handleActivityClose = () => {
+    setIsActivityModalOpen(false);
+    setSelectedActivity(null);
   };
 
   const handleWorkoutStart = async (workout: CalendarWorkout) => {
@@ -500,27 +560,38 @@ export default function CoachPage() {
 
         {/* Main Content Area */}
         {selectedAthlete ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Athlete Profile */}
-            <div className="lg:col-span-1">
-              <AthleteProfile athlete={selectedAthlete} />
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* Athlete Profile */}
+              <div className="lg:col-span-1">
+                <AthleteProfile athlete={selectedAthlete} />
+              </div>
+
+              {/* Enhanced Monthly Calendar */}
+              <div className="lg:col-span-2">
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">📅 Monthly View</h3>
+                  <EnhancedMonthlySchedule
+                    userId={selectedAthlete?.id}
+                    currentDate={selectedDate}
+                    onDateSelect={handleEnhancedDateSelect}
+                    onMonthChange={handleMonthChange}
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Workout Calendar */}
-            <div className="lg:col-span-2">
-              <WorkoutCalendar
-                workouts={workouts}
-                selectedDate={selectedDate}
-                onDateSelect={setSelectedDate}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                isLoading={isLoadingWorkouts}
-                onAddWorkout={handleAddWorkout}
-                onWorkoutDeleted={handleWorkoutDeleted}
-                onWorkoutSelect={handleWorkoutSelect}
+            {/* Enhanced Weekly Calendar - Full Width */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-white mb-4">📊 Weekly View</h3>
+              <EnhancedWeeklySchedule
+                userId={selectedAthlete?.id}
+                currentWeekStart={currentWeekStart}
+                onDateSelect={handleEnhancedDateSelect}
+                onWeekChange={handleWeekChange}
               />
             </div>
-          </div>
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
             <div className="text-6xl mb-4">🦈</div>
@@ -572,6 +643,13 @@ export default function CoachPage() {
           showCoachActions={true}
         />
       )}
+
+      {/* Activity Detail Modal */}
+      <ActivityDetailModal
+        activity={selectedActivity}
+        isOpen={isActivityModalOpen}
+        onClose={handleActivityClose}
+      />
     </div>
   );
 }
