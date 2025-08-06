@@ -117,14 +117,14 @@ export default function ActivityDetailModal({
               </div>
             )}
 
-            {activity.average_speed && (
+            {typeof activity.average_speed === 'number' && !isNaN(activity.average_speed) ? (
               <div className="bg-purple-50 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-purple-600">
                   {(activity.average_speed * 3.6).toFixed(1)} km/h
                 </div>
                 <div className="text-sm text-gray-600">Avg Speed</div>
               </div>
-            )}
+            ) : null}
 
             {activity.elevation_gain && (
               <div className="bg-orange-50 p-4 rounded-lg text-center">
@@ -205,12 +205,12 @@ export default function ActivityDetailModal({
                   </div>
                 )}
 
-                {activity.intensity_factor && (
+                {typeof activity.intensity_factor === 'number' && !isNaN(activity.intensity_factor) ? (
                   <div className="bg-indigo-50 p-3 rounded-lg">
                     <div className="text-lg font-bold text-indigo-600">{activity.intensity_factor.toFixed(2)}</div>
                     <div className="text-sm text-gray-600">IF</div>
                   </div>
-                )}
+                ) : null}
 
                 {activity.calories && (
                   <div className="bg-green-50 p-3 rounded-lg">
