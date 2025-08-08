@@ -632,7 +632,6 @@ export default function CoachPage() {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-            <div className="text-6xl mb-4">111</div>
             <h3 className="text-white text-xl font-semibold mb-2">
               {t('coach.selectAthlete')}
             </h3>

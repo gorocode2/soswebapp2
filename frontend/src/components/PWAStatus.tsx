@@ -28,15 +28,9 @@ export default function PWAStatus() {
     };
   }, []);
 
+  // Don't show anything when app is installed to avoid blocking content
   if (isInstalled) {
-    return (
-      <div className="fixed top-4 right-4 z-40">
-        <div className="flex items-center space-x-2 bg-green-600 text-white px-3 py-1 rounded-full text-xs">
-          <span>📱</span>
-          <span>App Installed</span>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   if (!isOnline) {
