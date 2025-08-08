@@ -32,6 +32,8 @@ interface EnhancedMonthlyScheduleProps {
   onDateSelect?: (date: number, activities: Activity[], workouts: CalendarWorkout[]) => void;
   onMonthChange?: (direction: 'prev' | 'next') => void;
   onWeekChange?: (newWeekStart: Date) => void; // New prop for week navigation
+  onActivityClick?: (activity: Activity) => void;
+  onWorkoutClick?: (workout: CalendarWorkout) => void;
 }
 
 export default function EnhancedMonthlySchedule({ 
@@ -40,7 +42,9 @@ export default function EnhancedMonthlySchedule({
   currentWeekStart,
   onDateSelect,
   onMonthChange,
-  onWeekChange
+  onWeekChange,
+  onActivityClick,
+  onWorkoutClick
 }: EnhancedMonthlyScheduleProps) {
   const [monthlyPlan, setMonthlyPlan] = useState<MonthlyPlan | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -243,6 +247,8 @@ export default function EnhancedMonthlySchedule({
     onDateSelect?.(date, dayActivities, dayWorkouts);
   };
 
+
+
   const handleMonthChange = (direction: 'prev' | 'next') => {
     onMonthChange?.(direction);
   };
@@ -325,6 +331,8 @@ export default function EnhancedMonthlySchedule({
               isCurrentMonth={false}
               isInCurrentWeek={isInCurrentWeek(date, -1)}
               onClick={() => {}} // No action for overflow dates
+              onActivityClick={onActivityClick}
+              onWorkoutClick={onWorkoutClick}
             />
           );
         })}
@@ -345,6 +353,8 @@ export default function EnhancedMonthlySchedule({
               isCurrentMonth={true}
               isInCurrentWeek={isInCurrentWeek(date, 0)}
               onClick={handleDateSelect}
+              onActivityClick={onActivityClick}
+              onWorkoutClick={onWorkoutClick}
             />
           );
         })}
@@ -365,6 +375,8 @@ export default function EnhancedMonthlySchedule({
               isCurrentMonth={false}
               isInCurrentWeek={isInCurrentWeek(date, 1)}
               onClick={() => {}} // No action for overflow dates
+              onActivityClick={onActivityClick}
+              onWorkoutClick={onWorkoutClick}
             />
           );
         })}

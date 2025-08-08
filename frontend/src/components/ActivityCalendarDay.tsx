@@ -18,6 +18,8 @@ interface ActivityCalendarDayProps {
   isCurrentMonth: boolean;
   isInCurrentWeek?: boolean; // New prop for week highlighting
   onClick: (date: number, activities: Activity[], workouts: CalendarWorkout[]) => void;
+  onActivityClick?: (activity: Activity) => void;
+  onWorkoutClick?: (workout: CalendarWorkout) => void;
 }
 
 export default function ActivityCalendarDay({
@@ -27,7 +29,9 @@ export default function ActivityCalendarDay({
   isToday,
   isCurrentMonth,
   isInCurrentWeek = false,
-  onClick
+  onClick,
+  onActivityClick,
+  onWorkoutClick
 }: ActivityCalendarDayProps) {
   const handleClick = () => {
     onClick(date, activities, workouts);
@@ -62,10 +66,14 @@ export default function ActivityCalendarDay({
           <div
             key={`activity-${activity.id}-${index}`}
             className={`
-              text-xs px-1 py-0.5 rounded text-white truncate
+              text-xs px-1 py-0.5 rounded text-white truncate cursor-pointer hover:opacity-80 transition-opacity
               ${activitiesService.getActivityColor(activity.activity_type)}
             `}
             title={`${activity.name} - ${activitiesService.formatDuration(activity.elapsed_time || activity.moving_time)}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onActivityClick?.(activity);
+            }}
           >
             <div className="flex items-center gap-1">
               <span className="text-[10px]">
@@ -83,13 +91,17 @@ export default function ActivityCalendarDay({
           <div
             key={`workout-${workout.id}-${index}`}
             className={`
-              text-xs px-1 py-0.5 rounded border truncate
+              text-xs px-1 py-0.5 rounded border truncate cursor-pointer hover:opacity-80 transition-opacity
               ${workout.status === 'completed' ? 'bg-green-100 border-green-300 text-green-700' :
                 workout.status === 'in_progress' ? 'bg-yellow-100 border-yellow-300 text-yellow-700' :
                 workout.status === 'cancelled' ? 'bg-red-100 border-red-300 text-red-700' :
                 'bg-blue-100 border-blue-300 text-blue-700'}
             `}
             title={`${workout.name} - ${workout.duration}min`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onWorkoutClick?.(workout);
+            }}
           >
             <div className="flex items-center gap-1">
               <span className="text-[10px]">💪</span>

@@ -29,6 +29,8 @@ interface EnhancedWeeklyScheduleProps {
   currentWeekStart?: Date;
   onDateSelect?: (date: Date, activities: Activity[], workouts: CalendarWorkout[]) => void;
   onWeekChange?: (direction: 'prev' | 'next') => void;
+  onActivityClick?: (activity: Activity) => void;
+  onWorkoutClick?: (workout: CalendarWorkout) => void;
 }
 
 export default function EnhancedWeeklySchedule({ 
@@ -42,7 +44,9 @@ export default function EnhancedWeeklySchedule({
     return monday;
   })(),
   onDateSelect,
-  onWeekChange 
+  onWeekChange,
+  onActivityClick,
+  onWorkoutClick
 }: EnhancedWeeklyScheduleProps) {
   const [workouts, setWorkouts] = useState<CalendarWorkout[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -285,10 +289,14 @@ export default function EnhancedWeeklySchedule({
                     <div
                       key={`activity-${activity.id}-${activityIndex}`}
                       className={`
-                        text-xs px-2 py-1 rounded text-white
+                        text-xs px-2 py-1 rounded text-white cursor-pointer hover:opacity-80 transition-opacity
                         ${activitiesService.getActivityColor(activity.activity_type)}
                       `}
                       title={`${activity.name} - ${activitiesService.formatDuration(activity.elapsed_time || activity.moving_time)}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onActivityClick?.(activity);
+                      }}
                     >
                       <div className="flex items-center gap-1 mb-1">
                         <span className="text-[10px]">
@@ -311,13 +319,17 @@ export default function EnhancedWeeklySchedule({
                     <div
                       key={`workout-${workout.id}-${workoutIndex}`}
                       className={`
-                        text-xs px-2 py-1 rounded border
+                        text-xs px-2 py-1 rounded border cursor-pointer hover:opacity-80 transition-opacity
                         ${workout.status === 'completed' ? 'bg-green-100 border-green-300 text-green-700' :
                           workout.status === 'in_progress' ? 'bg-yellow-100 border-yellow-300 text-yellow-700' :
                           workout.status === 'cancelled' ? 'bg-red-100 border-red-300 text-red-700' :
                           'bg-blue-100 border-blue-300 text-blue-700'}
                       `}
                       title={`${workout.name} - ${workout.duration}min`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onWorkoutClick?.(workout);
+                      }}
                     >
                       <div className="flex items-center gap-1 mb-1">
                         <span className="text-[10px]">💪</span>

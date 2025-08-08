@@ -324,6 +324,19 @@ export default function CoachPage() {
     }
   };
 
+  // Individual item click handlers
+  const handleActivityClick = (activity: Activity) => {
+    console.log('🦈 Activity clicked:', activity);
+    setSelectedActivity(activity);
+    setIsActivityModalOpen(true);
+  };
+
+  const handleWorkoutClick = (workout: CalendarWorkout) => {
+    console.log('💪 Workout clicked:', workout);
+    setSelectedWorkout(workout);
+    setIsModalOpen(true);
+  };
+
   // Month navigation handler
   const handleMonthChange = (direction: 'prev' | 'next') => {
     const newDate = new Date(selectedDate);
@@ -599,6 +612,8 @@ export default function CoachPage() {
                     onDateSelect={handleEnhancedDateSelect}
                     onMonthChange={handleMonthChange}
                     onWeekChange={setCurrentWeekStart}
+                    onActivityClick={handleActivityClick}
+                    onWorkoutClick={handleWorkoutClick}
                   />
                 </div>
               </div>
@@ -612,6 +627,8 @@ export default function CoachPage() {
                 currentWeekStart={currentWeekStart}
                 onDateSelect={handleEnhancedDateSelect}
                 onWeekChange={handleWeekChange}
+                onActivityClick={handleActivityClick}
+                onWorkoutClick={handleWorkoutClick}
               />
             </div>
           </>
