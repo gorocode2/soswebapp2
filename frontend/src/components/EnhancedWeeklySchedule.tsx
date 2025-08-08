@@ -242,7 +242,7 @@ export default function EnhancedWeeklySchedule({
       </div>
 
       {/* Weekly grid */}
-      <div className="space-y-4">
+      <div className="space-y-2">
         {weekDates.map((date, index) => {
           const dayActivities = getActivitiesForDate(date);
           const dayWorkouts = getWorkoutsForDate(date);
@@ -252,36 +252,40 @@ export default function EnhancedWeeklySchedule({
             <div
               key={index}
               className={`
-                flex flex-col sm:flex-row gap-4 p-4 border-2 rounded-lg cursor-pointer transition-all duration-200
-                ${isTodayDate ? 'border-blue-300 bg-blue-50' : 'border-gray-200 hover:border-blue-200 hover:bg-gray-50'}
+                flex flex-col sm:flex-row gap-2 p-3 cursor-pointer transition-all duration-200
+                ${isTodayDate ? 'bg-blue-50' : 'hover:bg-gray-50'}
               `}
               onClick={() => handleDateSelect(date)}
             >
-              {/* Day header - Fixed width on larger screens */}
+              {/* Day header with summary on the right */}
               <div className="flex-shrink-0 w-full sm:w-40">
-                <div className="flex items-center gap-3 mb-2 sm:mb-0">
-                  <div className={`text-lg font-semibold ${isTodayDate ? 'text-blue-600' : 'text-gray-800'}`}>
-                    {daysOfWeek[index]}
+                <div className="flex items-center justify-between mb-1 sm:mb-0">
+                  <div className="flex items-center gap-3">
+                    <div className={`text-lg font-semibold ${isTodayDate ? 'text-blue-600' : 'text-gray-800'}`}>
+                      {daysOfWeek[index]}
+                    </div>
+                    <div className={`text-sm ${isTodayDate ? 'text-blue-600' : 'text-gray-600'}`}>
+                      {date.getDate()}
+                    </div>
+                    {isTodayDate && (
+                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                        Today
+                      </span>
+                    )}
                   </div>
-                  <div className={`text-sm ${isTodayDate ? 'text-blue-600' : 'text-gray-600'}`}>
-                    {date.getDate()}
-                  </div>
-                  {isTodayDate && (
-                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                      Today
-                    </span>
+                  
+                  {/* Summary on the right */}
+                  {(dayActivities.length > 0 || dayWorkouts.length > 0) && (
+                    <div className="text-xs text-gray-500">
+                      {dayActivities.length > 0 && <span>{dayActivities.length} activity{dayActivities.length !== 1 ? 's' : ''}</span>}
+                      {dayActivities.length > 0 && dayWorkouts.length > 0 && <span> • </span>}
+                      {dayWorkouts.length > 0 && <span>{dayWorkouts.length} workout{dayWorkouts.length !== 1 ? 's' : ''}</span>}
+                    </div>
                   )}
                 </div>
-                {(dayActivities.length > 0 || dayWorkouts.length > 0) && (
-                  <div className="text-xs text-gray-500">
-                    {dayActivities.length > 0 && <span>{dayActivities.length} activities</span>}
-                    {dayActivities.length > 0 && dayWorkouts.length > 0 && <span> • </span>}
-                    {dayWorkouts.length > 0 && <span>{dayWorkouts.length} workouts</span>}
-                  </div>
-                )}
               </div>
 
-              {/* Activities and Workouts - Flexible width */}
+              {/* Remaining activities and workouts - Flexible width */}
               <div className="flex-1">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                   {/* Activities */}
