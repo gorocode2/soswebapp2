@@ -47,6 +47,16 @@ export default function WorkoutPage() {
       newWeekStart.setDate(newWeekStart.getDate() + 7);
     }
     setCurrentWeekStart(newWeekStart);
+    
+    // Update month view if the week spans to a different month
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    const newWeekMonth = newWeekStart.getMonth();
+    const newWeekYear = newWeekStart.getFullYear();
+    
+    if (currentMonth !== newWeekMonth || currentYear !== newWeekYear) {
+      setCurrentDate(new Date(newWeekYear, newWeekMonth, 1));
+    }
   };
 
   // Enhanced date selection for both activities and workouts
@@ -79,6 +89,19 @@ export default function WorkoutPage() {
   const handleActivityClose = () => {
     setIsActivityModalOpen(false);
     setSelectedActivity(null);
+  };
+
+  // Individual item click handlers (same as coach page)
+  const handleActivityClick = (activity: Activity) => {
+    console.log('🦈 Activity clicked:', activity);
+    setSelectedActivity(activity);
+    setIsActivityModalOpen(true);
+  };
+
+  const handleWorkoutClick = (workout: CalendarWorkout) => {
+    console.log('💪 Workout clicked:', workout);
+    setSelectedWorkout(workout);
+    setIsModalOpen(true);
   };
 
   const handleWorkoutSelect = (workout: CalendarWorkout) => {
@@ -133,51 +156,31 @@ export default function WorkoutPage() {
       
       <main className="layout-content-container flex flex-col flex-1 p-4 pb-20">
         {/* Page Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-white">🦈 Training Calendar</h1>
-          </div>
-        </div>
 
         {/* Enhanced Monthly Schedule */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Monthly View</h2>
           <EnhancedMonthlySchedule 
             userId={userId}
             currentDate={memoizedCurrentDate}
+            currentWeekStart={memoizedCurrentWeekStart}
             onDateSelect={handleEnhancedDateSelect}
             onMonthChange={handleMonthChange}
+            onWeekChange={setCurrentWeekStart}
+            onActivityClick={handleActivityClick}
+            onWorkoutClick={handleWorkoutClick}
           />
         </div>
 
         {/* Enhanced Weekly Schedule */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Weekly View</h2>
           <EnhancedWeeklySchedule 
             userId={userId}
             currentWeekStart={memoizedCurrentWeekStart}
             onDateSelect={handleEnhancedDateSelect}
             onWeekChange={handleWeekChange}
+            onActivityClick={handleActivityClick}
+            onWorkoutClick={handleWorkoutClick}
           />
-        </div>
-
-        {/* Workout Summary Stats */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-center">
-            <h3 className="text-sm text-slate-400 mb-1">This Week</h3>
-            <p className="text-2xl font-bold text-cyan-400">5</p>
-            <p className="text-xs text-slate-500">workouts scheduled</p>
-          </div>
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-center">
-            <h3 className="text-sm text-slate-400 mb-1">Completed</h3>
-            <p className="text-2xl font-bold text-emerald-400">2</p>
-            <p className="text-xs text-slate-500">workouts this week</p>
-          </div>
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-center">
-            <h3 className="text-sm text-slate-400 mb-1">Total Time</h3>
-            <p className="text-2xl font-bold text-yellow-400">280</p>
-            <p className="text-xs text-slate-500">minutes this week</p>
-          </div>
         </div>
       </main>
       

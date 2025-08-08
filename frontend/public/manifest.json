@@ -1,0 +1,71 @@
+{
+  "name": "SOS Web App",
+  "short_name": "SOS",
+  "description": "Sports training and workout management app",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["sports", "health", "fitness"],
+  "icons": [
+    {
+      "src": "/images/soslogobig.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/soslogobig.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/soslogobig.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "apple touch"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your training dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/images/soslogobig.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Coach",
+      "short_name": "Coach",
+      "description": "Coach dashboard and athlete management",
+      "url": "/coach",
+      "icons": [
+        {
+          "src": "/images/soslogobig.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Workouts",
+      "short_name": "Workouts",
+      "description": "View and manage your workouts",
+      "url": "/workout",
+      "icons": [
+        {
+          "src": "/images/soslogobig.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

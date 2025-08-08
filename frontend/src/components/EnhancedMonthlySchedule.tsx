@@ -382,32 +382,6 @@ export default function EnhancedMonthlySchedule({
         })}
       </div>
 
-      {/* Legend */}
-      <div className="mt-6 pt-4 border-t border-gray-700">
-        <div className="flex flex-wrap gap-4 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-500 rounded"></div>
-            <span className="text-gray-300">🚴 Cycling</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-red-500 rounded"></div>
-            <span className="text-gray-300">🏃 Running</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-400 border border-blue-300 rounded"></div>
-            <span className="text-gray-300">💪 Planned Workout</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-400 border border-green-300 rounded"></div>
-            <span className="text-gray-300">✅ Completed Workout</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-indigo-400 border border-indigo-300 rounded"></div>
-            <span className="text-gray-300">📆 Current Week</span>
-          </div>
-        </div>
-      </div>
-
       {/* Summary stats */}
       {activities.length > 0 && (
         <div className="mt-4 pt-4 border-t border-gray-700">
