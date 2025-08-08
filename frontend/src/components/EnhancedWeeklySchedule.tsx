@@ -33,7 +33,14 @@ interface EnhancedWeeklyScheduleProps {
 
 export default function EnhancedWeeklySchedule({ 
   userId = 34,
-  currentWeekStart = new Date(),
+  currentWeekStart = (() => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If Sunday, go back 6 days; otherwise go back (dayOfWeek - 1) days
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - daysToMonday);
+    return monday;
+  })(),
   onDateSelect,
   onWeekChange 
 }: EnhancedWeeklyScheduleProps) {
@@ -66,20 +73,21 @@ export default function EnhancedWeeklySchedule({
         const weekEnd = new Date(currentWeekStart);
         weekEnd.setDate(weekEnd.getDate() + 6);
         
+        // Use local date strings for API calls
+        const weekStartStr = formatLocalDate(weekStart);
+        const weekEndStr = formatLocalDate(weekEnd);
+
         // Load workouts and activities in parallel
         const [weekAssignments, weekActivities] = await Promise.all([
-          // Load workout assignments for the week
           workoutService.getAssignmentsByDateRange(
             userId,
-            weekStart.toISOString().split('T')[0],
-            weekEnd.toISOString().split('T')[0]
+            weekStartStr,
+            weekEndStr
           ),
-          // Load activities for the week
-          activitiesService.getActivitiesForWeek(userId, weekStart)
+          activitiesService.getActivitiesForWeek(userId, weekStartStr)
         ]);
         
         if (isMounted) {
-          // Convert assignments to CalendarWorkout format if needed
           const workoutsFromAssignments: CalendarWorkout[] = weekAssignments.assignments?.map(assignment => ({
             id: assignment.id,
             assignment_id: assignment.id,
@@ -117,6 +125,14 @@ export default function EnhancedWeeklySchedule({
     };
   }, [userId, currentWeekStart]);
 
+  // Helper to format date as YYYY-MM-DD in local time
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Get workouts for a specific date
   const getWorkoutsForDate = useCallback((date: Date): CalendarWorkout[] => {
     const dateStr = date.toISOString().split('T')[0];
@@ -130,11 +146,23 @@ export default function EnhancedWeeklySchedule({
 
   // Get activities for a specific date
   const getActivitiesForDate = useCallback((date: Date): Activity[] => {
-    const dateStr = date.toISOString().split('T')[0];
-    return activities.filter(activity => {
-      const activityDate = activity.start_date_local.split('T')[0];
+    const dateStr = formatLocalDate(date);
+    
+    const filtered = activities.filter(activity => {
+      // Handle both old format (UTC ISO string) and new format (local time string)
+      let activityDate: string;
+      if (activity.start_date_local.endsWith('Z') || activity.start_date_local.includes('.000Z')) {
+        // Old format: UTC ISO string like "2025-08-06T22:32:44.000Z"
+        const d = new Date(activity.start_date_local);
+        activityDate = formatLocalDate(d);
+      } else {
+        // New format: local time string like "2025-08-06T10:14:46"
+        activityDate = activity.start_date_local.split('T')[0];
+      }
       return activityDate === dateStr;
     });
+    
+    return filtered;
   }, [activities]);
 
   const handleDateSelect = (date: Date) => {

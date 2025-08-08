@@ -163,6 +163,10 @@ router.post('/sync-intervals-icu/:athleteId', async (req: Request, res: Response
         // Map intervals.icu activity to our format
         const activityData = intervalsIcuActivitiesService.mapIntervalsIcuActivity(icuActivity, user.id);
         
+        // DEBUG: Log what gets stored in database
+        console.log('💾 [DATABASE] Storing start_date_local:', activityData.start_date_local);
+        console.log('💾 [DATABASE] Storing start_date_utc:', activityData.start_date_utc);
+        
         // Insert activity into database
         const insertResult = await db.query(`
           INSERT INTO activities (

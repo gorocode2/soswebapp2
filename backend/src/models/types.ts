@@ -665,8 +665,8 @@ export interface CreateActivityRequest {
   name: string;
   description?: string;
   activity_type: string;
-  start_date_local: Date;
-  start_date_utc: Date;
+  start_date_local: string;
+  start_date_utc: string;
   elapsed_time: number;
   moving_time: number;
   distance?: number;

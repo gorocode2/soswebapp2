@@ -148,9 +148,15 @@ class IntervalsIcuActivitiesService {
       });
     }
 
-    // Parse date
-    const startDateLocal = new Date(icuActivity.start_date_local);
-    const startDateUtc = new Date(icuActivity.start_date);
+    // Store dates as strings exactly as received from intervals.icu
+    const startDateLocal = icuActivity.start_date_local; // Keep as local time string
+    const startDateUtc = icuActivity.start_date; // Keep as UTC string with Z
+    
+    // DEBUG: Log original intervals.icu date vs what we store
+    console.log('🔍 [INTERVALS.ICU API] Original start_date_local:', icuActivity.start_date_local);
+    console.log('🔍 [INTERVALS.ICU API] Original start_date (UTC):', icuActivity.start_date);
+    console.log('🔍 [INTERVALS.ICU API] Will store start_date_local:', startDateLocal);
+    console.log('🔍 [INTERVALS.ICU API] Will store start_date_utc:', startDateUtc);
 
     return {
       intervals_icu_id: icuActivity.id,

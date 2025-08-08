@@ -104,11 +104,6 @@ export default function WorkoutCalendar({
   const [isWorkoutLibraryOpen, setIsWorkoutLibraryOpen] = useState(false);
   const [selectedDateForWorkout, setSelectedDateForWorkout] = useState<Date | null>(null);
 
-  // Debug: Log workouts when they change
-  React.useEffect(() => {
-    console.log('🗓️ WorkoutCalendar loaded:', workouts.length, 'workouts');
-  }, [workouts]);
-
   // Helper function to format date to YYYY-MM-DD using local timezone
   const formatLocalDate = (date: Date) => {
     const year = date.getFullYear();
@@ -328,6 +323,20 @@ export default function WorkoutCalendar({
       setSelectedDateForWorkout(null);
     }
   };
+
+  // Debug: Log current view mode and monthly data
+  console.log('[DEBUG] Current viewMode:', viewMode);
+  
+  // Log data that is rendered in the monthly calendar grid (for all days)
+  if (viewMode === 'month') {
+    console.log('[MONTHLY] Monthly view is active - logging rendered data...');
+    const days = generateCalendarDays();
+    days.forEach(date => {
+      const dateStr = formatLocalDate(date);
+      const w = getWorkoutsForDate(date);
+      console.log('[MONTHLY] Rendered Workouts for', dateStr, w.map(wo => wo.date));
+    });
+  }
 
   if (isLoading) {
     return (

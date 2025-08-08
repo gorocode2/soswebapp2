@@ -195,10 +195,10 @@ class ActivitiesService {
   /**
    * Get activities for a specific week (for calendar week view)
    */
-  async getActivitiesForWeek(userId: number, weekStart: Date): Promise<Activity[]> {
-    const startDate = new Date(weekStart).toISOString().split('T')[0];
-    const endDate = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    
+  async getActivitiesForWeek(userId: number, weekStart: string): Promise<Activity[]> {
+    const weekStartDate = new Date(weekStart);
+    const startDate = weekStart;
+    const endDate = new Date(weekStartDate.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     return this.getActivitiesForDateRange(userId, startDate, endDate);
   }
 

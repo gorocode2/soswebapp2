@@ -85,7 +85,18 @@ export default function CoachPage() {
   const [isLoadingAthletes, setIsLoadingAthletes] = useState(true);
   const [isLoadingWorkouts, setIsLoadingWorkouts] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
+  
+  // Calculate Monday of current week for proper week start
+  const getMondayOfCurrentWeek = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If Sunday, go back 6 days; otherwise go back (dayOfWeek - 1) days
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - daysToMonday);
+    return monday;
+  };
+  
+  const [currentWeekStart, setCurrentWeekStart] = useState(getMondayOfCurrentWeek());
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
   const [isWorkoutLibraryOpen, setIsWorkoutLibraryOpen] = useState(false);
   
@@ -333,6 +344,16 @@ export default function CoachPage() {
       newWeekStart.setDate(newWeekStart.getDate() + 7);
     }
     setCurrentWeekStart(newWeekStart);
+    
+    // Update month view if the week spans to a different month
+    const currentMonth = selectedDate.getMonth();
+    const currentYear = selectedDate.getFullYear();
+    const newWeekMonth = newWeekStart.getMonth();
+    const newWeekYear = newWeekStart.getFullYear();
+    
+    if (currentMonth !== newWeekMonth || currentYear !== newWeekYear) {
+      setSelectedDate(new Date(newWeekYear, newWeekMonth, 1));
+    }
   };
 
   // Activity modal handlers
@@ -574,8 +595,10 @@ export default function CoachPage() {
                   <EnhancedMonthlySchedule
                     userId={selectedAthlete?.id}
                     currentDate={selectedDate}
+                    currentWeekStart={currentWeekStart}
                     onDateSelect={handleEnhancedDateSelect}
                     onMonthChange={handleMonthChange}
+                    onWeekChange={setCurrentWeekStart}
                   />
                 </div>
               </div>

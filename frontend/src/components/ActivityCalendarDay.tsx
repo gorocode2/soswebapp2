@@ -16,6 +16,7 @@ interface ActivityCalendarDayProps {
   workouts: CalendarWorkout[];
   isToday: boolean;
   isCurrentMonth: boolean;
+  isInCurrentWeek?: boolean; // New prop for week highlighting
   onClick: (date: number, activities: Activity[], workouts: CalendarWorkout[]) => void;
 }
 
@@ -25,6 +26,7 @@ export default function ActivityCalendarDay({
   workouts,
   isToday,
   isCurrentMonth,
+  isInCurrentWeek = false,
   onClick
 }: ActivityCalendarDayProps) {
   const handleClick = () => {
@@ -36,12 +38,14 @@ export default function ActivityCalendarDay({
   return (
     <div
       className={`
-        min-h-[80px] p-1 border border-gray-100 cursor-pointer transition-all duration-200
-        ${isToday ? 'bg-blue-50 border-blue-300' : 'hover:bg-gray-50'}
-        ${!isCurrentMonth ? 'opacity-30' : ''}
-        ${hasItems ? 'bg-gradient-to-br from-blue-25 to-cyan-25' : ''}
+        min-h-[80px] p-1 border border-gray-100 transition-all duration-200
+        ${isCurrentMonth ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'}
+        ${isToday ? 'bg-blue-50 border-blue-300' : ''}
+        ${isInCurrentWeek && !isToday && isCurrentMonth ? 'bg-indigo-25 border-indigo-200 ring-1 ring-indigo-200' : ''}
+        ${!isCurrentMonth ? 'opacity-40 bg-gray-25' : ''}
+        ${hasItems && isCurrentMonth ? 'bg-gradient-to-br from-blue-25 to-cyan-25' : ''}
       `}
-      onClick={handleClick}
+      onClick={isCurrentMonth ? handleClick : undefined}
     >
       {/* Date Number */}
       <div className={`
