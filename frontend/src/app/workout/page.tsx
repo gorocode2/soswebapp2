@@ -16,7 +16,18 @@ import workoutService from '@/services/workoutService';
 export default function WorkoutPage() {
   const { user, logout } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
+  
+  // Calculate Monday of current week
+  const getMondayOfCurrentWeek = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If Sunday, go back 6 days; otherwise go back (dayOfWeek - 1) days
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - daysToMonday);
+    return monday;
+  };
+  
+  const [currentWeekStart, setCurrentWeekStart] = useState(getMondayOfCurrentWeek());
   const [selectedWorkout, setSelectedWorkout] = useState<CalendarWorkout | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
