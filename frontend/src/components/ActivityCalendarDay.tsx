@@ -42,20 +42,20 @@ export default function ActivityCalendarDay({
   return (
     <div
       className={`
-        min-h-[80px] p-1 border border-gray-100 transition-all duration-200
-        ${isCurrentMonth ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'}
-        ${isToday ? 'bg-blue-50 border-blue-300' : ''}
-        ${isInCurrentWeek && !isToday && isCurrentMonth ? 'bg-indigo-25 border-indigo-200 ring-1 ring-indigo-200' : ''}
-        ${!isCurrentMonth ? 'opacity-40 bg-gray-25' : ''}
-        ${hasItems && isCurrentMonth ? 'bg-gradient-to-br from-blue-25 to-cyan-25' : ''}
+        min-h-[80px] p-1 border border-gray-700 transition-all duration-200
+        ${isCurrentMonth ? 'cursor-pointer hover:bg-gray-800' : 'cursor-default'}
+        ${isToday ? 'bg-blue-900 border-blue-500' : ''}
+        ${isInCurrentWeek && !isToday && isCurrentMonth ? 'bg-indigo-900 border-indigo-500 ring-1 ring-indigo-500' : ''}
+        ${!isCurrentMonth ? 'opacity-40 bg-gray-800' : ''}
+        ${hasItems && isCurrentMonth ? 'bg-gradient-to-br from-blue-900 to-cyan-900' : ''}
       `}
       onClick={isCurrentMonth ? handleClick : undefined}
     >
       {/* Date Number */}
       <div className={`
         text-sm font-medium mb-1
-        ${isToday ? 'text-blue-600' : 'text-gray-700'}
-        ${!isCurrentMonth ? 'text-gray-400' : ''}
+        ${isToday ? 'text-blue-400' : 'text-gray-200'}
+        ${!isCurrentMonth ? 'text-gray-500' : ''}
       `}>
         {date}
       </div>

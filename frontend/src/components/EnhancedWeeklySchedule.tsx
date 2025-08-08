@@ -217,24 +217,24 @@ export default function EnhancedWeeklySchedule({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="bg-gray-900 rounded-xl shadow-lg p-6 border border-gray-700">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          🦈 <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
             Week of {formatDate(weekDates[0])} - {formatDate(weekDates[6])}
           </span>
         </h2>
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleWeekChange('prev')}
-            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 text-gray-200 hover:text-blue-300 hover:bg-gray-700 rounded-lg transition-colors"
           >
             <CaretLeftIcon />
           </button>
           <button
             onClick={() => handleWeekChange('next')}
-            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 text-gray-200 hover:text-blue-300 hover:bg-gray-700 rounded-lg transition-colors"
           >
             <CaretRightIcon />
           </button>
@@ -253,7 +253,7 @@ export default function EnhancedWeeklySchedule({
               key={index}
               className={`
                 flex flex-col sm:flex-row gap-2 p-3 cursor-pointer transition-all duration-200
-                ${isTodayDate ? 'bg-blue-50' : 'hover:bg-gray-50'}
+                ${isTodayDate ? 'bg-blue-900' : 'hover:bg-gray-800'}
               `}
               onClick={() => handleDateSelect(date)}
             >
@@ -261,14 +261,14 @@ export default function EnhancedWeeklySchedule({
               <div className="flex-shrink-0 w-full sm:w-40">
                 <div className="flex items-center justify-between mb-1 sm:mb-0">
                   <div className="flex items-center gap-3">
-                    <div className={`text-lg font-semibold ${isTodayDate ? 'text-blue-600' : 'text-gray-800'}`}>
-                      {daysOfWeek[index]}
-                    </div>
-                    <div className={`text-sm ${isTodayDate ? 'text-blue-600' : 'text-gray-600'}`}>
-                      {date.getDate()}
-                    </div>
+                                      <div className={`text-lg font-semibold ${isTodayDate ? 'text-blue-400' : 'text-gray-200'}`}>
+                    {daysOfWeek[index]}
+                  </div>
+                  <div className={`text-sm ${isTodayDate ? 'text-blue-400' : 'text-gray-400'}`}>
+                    {date.getDate()}
+                  </div>
                     {isTodayDate && (
-                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                      <span className="px-2 py-1 text-xs font-medium bg-blue-900 text-blue-200 rounded-full">
                         Today
                       </span>
                     )}
@@ -276,7 +276,7 @@ export default function EnhancedWeeklySchedule({
                   
                   {/* Summary on the right */}
                   {(dayActivities.length > 0 || dayWorkouts.length > 0) && (
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-400">
                       {dayActivities.length > 0 && <span>{dayActivities.length} activity{dayActivities.length !== 1 ? 's' : ''}</span>}
                       {dayActivities.length > 0 && dayWorkouts.length > 0 && <span> • </span>}
                       {dayWorkouts.length > 0 && <span>{dayWorkouts.length} workout{dayWorkouts.length !== 1 ? 's' : ''}</span>}

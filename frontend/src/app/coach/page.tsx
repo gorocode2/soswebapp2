@@ -151,7 +151,7 @@ export default function CoachPage() {
       // Check intervals.icu sync status
       if (response.intervals_icu_sync) {
         if (response.intervals_icu_sync.success) {
-          console.log('🦈 Workout synced with intervals.icu:', response.intervals_icu_sync.intervalId);
+          console.log(' Workout synced with intervals.icu:', response.intervals_icu_sync.intervalId);
           alert(`Workout assigned successfully!\n\n✅ Synced with ${selectedAthlete.firstName || selectedAthlete.username}'s intervals.icu (ID: ${response.intervals_icu_sync.intervalId})`);
         } else {
           const message = response.intervals_icu_sync.message;
@@ -164,7 +164,7 @@ export default function CoachPage() {
           }
         }
       } else {
-        console.log('🦈 Workout assigned (no intervals.icu sync configured)');
+        console.log(' Workout assigned (no intervals.icu sync configured)');
         alert('Workout assigned successfully!');
       }
       
@@ -186,7 +186,7 @@ export default function CoachPage() {
       setWorkouts(prevWorkouts => [...prevWorkouts, newWorkout]);
       
       // Show success message (you can add a toast notification here)
-      console.log('🦈 Workout assigned successfully!');
+      console.log('Workout assigned successfully!');
       
     } catch (error) {
       console.error('❌ Error adding workout to calendar:', error);
@@ -326,7 +326,7 @@ export default function CoachPage() {
 
   // Individual item click handlers
   const handleActivityClick = (activity: Activity) => {
-    console.log('🦈 Activity clicked:', activity);
+    console.log('Activity clicked:', activity);
     setSelectedActivity(activity);
     setIsActivityModalOpen(true);
   };
@@ -381,7 +381,7 @@ export default function CoachPage() {
       await workoutService.updateAssignmentStatus(workout.assignment_id, 'in_progress');
       
       // Show success message
-      alert(`🦈 Started ${workout.name}! Let's dominate this workout! 💪`);
+      alert(` Started ${workout.name}! Let's dominate this workout! 💪`);
       
       // Refresh workouts
       await handleWorkoutDeleted();
@@ -401,7 +401,7 @@ export default function CoachPage() {
       );
       
       // Show success message
-      alert(`🎉 Workout completed! Your athlete crushed ${workout.name}! 🦈💪`);
+      alert(`🎉 Workout completed! Your athlete crushed ${workout.name}! 💪`);
       
       // Refresh workouts
       await handleWorkoutDeleted();
@@ -430,7 +430,7 @@ export default function CoachPage() {
 
       if (result.success) {
         // Show success message
-        alert(`🦈 Workout "${workout.name}" has been removed successfully!`);
+        alert(` Workout "${workout.name}" has been removed successfully!`);
         
         // Refresh workouts to reflect the deletion
         await handleWorkoutDeleted();
@@ -469,7 +469,7 @@ export default function CoachPage() {
     }
 
     setIsSyncingActivities(true);
-    setActivitySyncMessage(`🦈 Syncing activities from ${getMonthName(month)} ${year}...`);
+    setActivitySyncMessage(` Syncing activities from ${getMonthName(month)} ${year}...`);
 
     try {
       // Calculate date range for the selected month
@@ -494,7 +494,7 @@ export default function CoachPage() {
 
       if (result.success) {
         setActivitySyncMessage(`✅ ${result.message}`);
-        console.log('🦈 Activities synced successfully:', result);
+        console.log('Activities synced successfully:', result);
         
         // Clear success message after 5 seconds
         setTimeout(() => setActivitySyncMessage(''), 5000);
@@ -603,8 +603,7 @@ export default function CoachPage() {
 
               {/* Enhanced Monthly Calendar */}
               <div className="lg:col-span-2">
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">📅 Monthly View</h3>
+                <div className="mb-1">
                   <EnhancedMonthlySchedule
                     userId={selectedAthlete?.id}
                     currentDate={selectedDate}
@@ -621,7 +620,6 @@ export default function CoachPage() {
 
             {/* Enhanced Weekly Calendar - Full Width */}
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-white mb-4">📊 Weekly View</h3>
               <EnhancedWeeklySchedule
                 userId={selectedAthlete?.id}
                 currentWeekStart={currentWeekStart}
@@ -634,7 +632,7 @@ export default function CoachPage() {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-            <div className="text-6xl mb-4">🦈</div>
+            <div className="text-6xl mb-4">111</div>
             <h3 className="text-white text-xl font-semibold mb-2">
               {t('coach.selectAthlete')}
             </h3>

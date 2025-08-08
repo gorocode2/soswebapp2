@@ -280,24 +280,24 @@ export default function EnhancedMonthlySchedule({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="bg-gray-900 rounded-xl shadow-lg p-6 border border-gray-700">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          🦈 <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
             {month} {year}
           </span>
         </h2>
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleMonthChange('prev')}
-            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 text-gray-200 hover:text-blue-300 hover:bg-gray-700 rounded-lg transition-colors"
           >
             <CaretLeftIcon />
           </button>
           <button
             onClick={() => handleMonthChange('next')}
-            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 text-gray-200 hover:text-blue-300 hover:bg-gray-700 rounded-lg transition-colors"
           >
             <CaretRightIcon />
           </button>
@@ -307,7 +307,7 @@ export default function EnhancedMonthlySchedule({
       {/* Days of week header */}
       <div className="grid grid-cols-7 gap-2 mb-2">
         {daysOfWeek.map((day, index) => (
-          <div key={`day-${index}`} className="text-center text-sm font-semibold text-gray-600 py-2">
+          <div key={`day-${index}`} className="text-center text-sm font-semibold text-gray-300 py-2">
             {day}
           </div>
         ))}
@@ -383,40 +383,40 @@ export default function EnhancedMonthlySchedule({
       </div>
 
       {/* Legend */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
+      <div className="mt-6 pt-4 border-t border-gray-700">
         <div className="flex flex-wrap gap-4 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-blue-500 rounded"></div>
-            <span className="text-gray-600">🚴 Cycling</span>
+            <span className="text-gray-300">🚴 Cycling</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-red-500 rounded"></div>
-            <span className="text-gray-600">🏃 Running</span>
+            <span className="text-gray-300">🏃 Running</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded"></div>
-            <span className="text-gray-600">💪 Planned Workout</span>
+            <div className="w-3 h-3 bg-blue-400 border border-blue-300 rounded"></div>
+            <span className="text-gray-300">💪 Planned Workout</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
-            <span className="text-gray-600">✅ Completed Workout</span>
+            <div className="w-3 h-3 bg-green-400 border border-green-300 rounded"></div>
+            <span className="text-gray-300">✅ Completed Workout</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-indigo-25 border border-indigo-200 rounded"></div>
-            <span className="text-gray-600">📆 Current Week</span>
+            <div className="w-3 h-3 bg-indigo-400 border border-indigo-300 rounded"></div>
+            <span className="text-gray-300">📆 Current Week</span>
           </div>
         </div>
       </div>
 
       {/* Summary stats */}
       {activities.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="text-sm text-gray-600">
-            <span className="font-semibold text-blue-600">{activities.length}</span> activities this month
+        <div className="mt-4 pt-4 border-t border-gray-700">
+          <div className="text-sm text-gray-300">
+            <span className="font-semibold text-blue-400">{activities.length}</span> activities this month
             {monthlyPlan && monthlyPlan.workouts.length > 0 && (
               <>
                 {' • '}
-                <span className="font-semibold text-purple-600">{monthlyPlan.workouts.length}</span> planned workouts
+                <span className="font-semibold text-purple-400">{monthlyPlan.workouts.length}</span> planned workouts
               </>
             )}
           </div>
